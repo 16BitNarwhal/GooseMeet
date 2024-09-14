@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_cors import CORS
+import datetime
 
 def log(level: str, message: str, meeting=''):
     color_map = {
@@ -30,7 +31,7 @@ def create_meeting():
 
     meetings[meeting_name] = {
         'users': [],
-        'messages': [], # username, content, type
+        'messages': [], # sender, content, type, time
     }
 
     # startup goose bot for meeting
@@ -62,7 +63,7 @@ def handle_chat_message(data):
         emit('error', {f'Meeting name not found: {data}'}, to=request.sid)
         return
 
-    meetings[meeting_name]['messages'].append({'sender': sender, 'content': message})
+    meetings[meeting_name]['messages'].append({'sender': sender, 'content': message, 'type': 'text', 'time': datetime.now()})
     log('INFO', f'[{sender}] sent: {message}', meeting_name)
     emit('chat_message', {'sender': sender, 'content': message}, room=meeting_name)
 
