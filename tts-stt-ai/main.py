@@ -15,12 +15,10 @@ import time
 
 
 def is_silent(data, threshold=500):
-    """Returns 'True' if below the 'silent' threshold"""
     return np.abs(np.frombuffer(data, np.int16)).mean() < threshold
 
 
 def record_audio(filename="input.wav", silent=False, duration=None):
-    """records audio from the microphone until silence is detected or a duration is reached."""
     CHUNK = 8192
     FORMAT = pyaudio.paInt16
     CHANNELS = 1

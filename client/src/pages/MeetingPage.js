@@ -1,18 +1,16 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
 import RTCHandler from '../services/rtcHandler';
 import Chat from '../components/Chat';
 import ChatHandler from '../services/chatHandler';
 import Header from '../components/Header';
-import { FaUser } from 'react-icons/fa';
-
-import { FaMicrophone, FaMicrophoneSlash, FaVideo, FaVideoSlash } from 'react-icons/fa';  // FontAwesome icons
+import { FaUser, FaMicrophone, FaMicrophoneSlash, FaVideo, FaVideoSlash } from 'react-icons/fa';
 import { MdCallEnd } from 'react-icons/md';
-
-
 import Button from '../components/Button';
 import toast, { Toaster } from 'react-hot-toast';
+import AIHandler from '../services/AIHandler';
+import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 
 const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
@@ -33,13 +31,27 @@ const MeetingPage = () => {
   const chatHandler = useRef(null);
   const [chatHistory, setChatHistory] = useState([]);
 
-  const errorHandler = (error) => {
-    console.error(error);
-    navigate('/');
-    toast.error(error.message);
-  }
+  const [aiHandler, setAiHandler] = useState(null);
 
-  const initializeMeeting = async () => {
+  const [isListening, setIsListening] = useState(false);
+  const {
+    transcript,
+    resetTranscript,
+    browserSupportsSpeechRecognition
+  } = useSpeechRecognition();
+
+  const errorHandler = useCallback((error) => {
+    console.error('Error in MeetingPage:', error);
+    toast.error(`An error occurred: ${error.message}`);
+  }, []);
+
+  useEffect(() => {
+    if (!browserSupportsSpeechRecognition) {
+      console.log("Browser doesn't support speech recognition.");
+    }
+  }, [browserSupportsSpeechRecognition]);
+
+  const initializeMeeting = useCallback(async () => {
     if (!username) {
       toast.error('Please enter a username before joining a meeting.');
       navigate('/');
@@ -76,16 +88,81 @@ const MeetingPage = () => {
     rtcHandler.current.initialize();
     // Set the local stream in state to trigger a re-render
     setLocalStream(rtcHandler.current.localStream);
-  };
+
+    const newAIHandler = new AIHandler(meeting_name, username, socketRef.current, setChatHistory);
+    setAiHandler(newAIHandler);
+  }, [meeting_name, username, navigate, socketRef, setChatHistory, setPeers, errorHandler]);
 
   useEffect(() => {
     initializeMeeting();
 
     return () => {
-      rtcHandler.current.cleanup();
-      socketRef.current.disconnect();
+      if (rtcHandler.current) {
+        rtcHandler.current.cleanup();
+      }
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
+      SpeechRecognition.abortListening();
     };
-  }, []);
+  }, [initializeMeeting]);
+
+  useEffect(() => {
+    if (transcript.toLowerCase().includes('goose')) {
+      handleGooseActivation();
+    }
+  }, [transcript]);
+
+  const sendAudioToBackend = async (text) => {
+    try {
+      const response = await fetch(`${apiUrl}/api/goose_response`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text, meeting_name }),
+      });
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      playAudio(audioUrl);
+    } catch (error) {
+      console.error('Error getting Goose response:', error);
+    }
+  };
+
+  const playAudio = (url) => {
+    const audio = new Audio(url);
+    audio.play();
+  };
+
+  const handleGooseActivation = useCallback(async () => {
+    if (!browserSupportsSpeechRecognition) {
+      console.log("Browser doesn't support speech recognition.");
+      return;
+    }
+    setIsListening(true);
+    resetTranscript();
+    SpeechRecognition.startListening({ continuous: true, language: 'en-US' });
+    
+    // Wait for a pause in speech
+    let lastTranscriptLength = 0;
+    let silenceTimer = null;
+    
+    const checkForPause = () => {
+      if (transcript.length === lastTranscriptLength) {
+        SpeechRecognition.stopListening();
+        setIsListening(false);
+        if (transcript) {
+          sendAudioToBackend(transcript);
+        }
+      } else {
+        lastTranscriptLength = transcript.length;
+        silenceTimer = setTimeout(checkForPause, 2000); // Check for 2 seconds of silence
+      }
+    };
+    
+    silenceTimer = setTimeout(checkForPause, 2000);
+  }, [browserSupportsSpeechRecognition, setIsListening, resetTranscript, transcript, sendAudioToBackend]);
 
   const toggleMute = () => {
     setIsMuted(prevState => {
@@ -111,58 +188,73 @@ const MeetingPage = () => {
     });
   };
 
-  if (!username || !rtcHandler.current) {
-    return null;
-  }
-
-  const VideoElement = React.memo(({ stream, muted, peerName }) => {
+  const VideoElement = React.memo(({ stream, muted, peerName, isAI, isListening }) => {
     const videoRef = useRef();
-  
+
     useEffect(() => {
       if (videoRef.current && stream) {
         videoRef.current.srcObject = stream;
       }
     }, [stream]);
-  
+
     return (
       <div className="relative rounded-md w-[450px] h-[250px] flex justify-center items-center text-white text-sm">
-        {/* Video Element */}
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted={muted}
-          className="w-full h-full rounded-md object-cover"
-        />
-    
-        {/* Bottom-left overlay for the username */}
+        {isAI ? (
+          <>
+            <img
+              src="/goose.png"
+              alt="Mr. Goose"
+              className="w-full h-full rounded-md object-cover"
+            />
+            {isListening && (
+              <div className="absolute top-2 right-2 bg-red-500 rounded-full w-4 h-4 animate-pulse"></div>
+            )}
+          </>
+        ) : (
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted={muted}
+            className="w-full h-full rounded-md object-cover"
+          />
+        )}
         <div className="absolute bottom-2 left-2 z-10 backdrop-blur-md bg-gray-100 bg-opacity-60 text-md px-4 py-2 text-white rounded">
-          <p className="video-username flex flex-row gap-2 align-center items-center"><FaUser size={10}/>{peerName}</p>
+          <p className="video-username flex flex-row gap-2 align-center items-center">
+            <FaUser size={10}/>{peerName}
+          </p>
         </div>
       </div>
     );
   });
 
-return (
-  <div className="relative h-screen flex bg-white dark:bg-neutral-900">
-    {/* Main content: Header, Videos, Footer */}
-    <div className="flex flex-col w-4/5 pt-8 h-full">
-      <Header eventName={meeting_name} timeLeft={username} />
-      <div className="flex-grow">
-      <div className="flex flex-wrap gap-4 justify-center p-4 ml-4">
-      {localStream && (
+  return (
+    <div className="relative h-screen flex bg-white dark:bg-neutral-900">
+      {/* Main content: Header, Videos, Footer */}
+      <div className="flex flex-col w-4/5 pt-8 h-full">
+        <Header eventName={meeting_name} timeLeft={username} />
+        <div className="flex-grow">
+        <div className="flex flex-wrap gap-4 justify-center p-4 ml-4">
+        {localStream && (
   <VideoElement stream={localStream} muted={true} peerName="You" />
 )}
-          {Object.entries(peers).map(([peerUsername, peer]) => (
-            peerUsername !== username && (
-              <VideoElement
-              key={peerUsername}
-              stream={peer.stream}
-              muted={false}
-              peerName={peerUsername === 'local' ? 'You' : peerUsername}  
-            />
-            )
-          ))}
+  <VideoElement
+    stream={null}
+    muted={false}
+    peerName="Mr. Goose"
+    isAI={true}
+    isListening={isListening}
+  />
+  {Object.entries(peers).map(([peerUsername, peer]) => (
+    peerUsername !== username && peerUsername !== 'Mr. Goose' && (
+      <VideoElement
+      key={peerUsername}
+      stream={peer.stream}
+      muted={false}
+      peerName={peerUsername}  
+    />
+    )
+  ))}
         </div>
       </div>
       <footer className="p-4 flex justify-center space-x-4 border-t border-neutral-700 dark:border-neutral-800">
@@ -205,7 +297,14 @@ return (
 
     {/* Chat Column using flex instead of absolute */}
     <div className="flex-shrink-0 w-1/5 h-full border-l border-neutral-800 p-4 dark:bg-neutral-900 overflow-y-auto">
-      <Chat chatHandler={chatHandler.current} initialChatHistory={chatHistory} peers={peers} />
+      {chatHandler.current && (
+        <Chat
+          chatHandler={chatHandler.current}
+          initialChatHistory={chatHistory}
+          peers={peers}
+          aiHandler={aiHandler}
+        />
+      )}
     </div>
   </div>
   );

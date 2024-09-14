@@ -3,13 +3,14 @@ import PropTypes from 'prop-types';
 import toast from 'react-hot-toast';
 import ChatInput from './ChatInput';
 
-const Chat = ({ chatHandler, initialChatHistory, peers }) => {
-  const [chatHistory, setChatHistory] = useState(initialChatHistory);
+const Chat = ({ chatHandler, initialChatHistory, peers, aiHandler }) => {
+  const [chatHistory, setChatHistory] = useState(initialChatHistory || []);
   const [activeTab, setActiveTab] = useState('chat'); // Manages which tab is active
 
   useEffect(() => {
-    // Setting the listener so that chatHandler can update chatHistory when new messages arrive
-    chatHandler.setChatHistoryListener(setChatHistory);
+    if (chatHandler) {
+      chatHandler.setChatHistoryListener(setChatHistory);
+    }
   }, [chatHandler]);
 
   const handleSendMessage = useCallback((message) => {
@@ -23,7 +24,12 @@ const Chat = ({ chatHandler, initialChatHistory, peers }) => {
       ...prevHistory,
       { sender: chatHandler.username, text: message },
     ]);
-  }, [chatHandler]);
+
+    // Process the message through AIHandler
+    if (aiHandler) {
+      aiHandler.processUserMessage(message);
+    }
+  }, [chatHandler, aiHandler]);
 
   const getProfilePicture = (name) => {
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
