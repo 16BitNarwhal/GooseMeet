@@ -10,6 +10,10 @@ body {
   color: #A6A7A7;
 }
 
+.camera-input {
+  background-color: #1B1B1B;
+}
+
 
 button, a, .hoverable {
   transition: all 0.2s ease; 
