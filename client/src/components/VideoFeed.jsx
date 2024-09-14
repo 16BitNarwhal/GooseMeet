@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect} from 'react';
 import toast from 'react-hot-toast';
 
-const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const apiUrl = 'http://localhost:5000';
 
 function VideoFeed() {
   const meeting_name = 'test'; // TODO: temp
