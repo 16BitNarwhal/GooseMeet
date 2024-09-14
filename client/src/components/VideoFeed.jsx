@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect} from 'react';
 import io from 'socket.io-client';
-import RTCHandler from '../services/RTCHandler';
+import RTCHandler from '../services/RTCHandler.jsx';
 import toast from 'react-hot-toast';
 
 const apiUrl = 'http://localhost:5000';
