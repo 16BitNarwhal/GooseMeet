@@ -5,6 +5,7 @@ import RTCHandler from '../services/rtcHandler';
 import Chat from '../components/Chat';
 import ChatHandler from '../services/chatHandler';
 import Header from '../components/Header';
+import { FaUser } from 'react-icons/fa';
 
 import { FaMicrophone, FaMicrophoneSlash, FaVideo, FaVideoSlash } from 'react-icons/fa';  // FontAwesome icons
 import { MdCallEnd } from 'react-icons/md';
@@ -73,6 +74,8 @@ const MeetingPage = () => {
 
     rtcHandler.current = new RTCHandler(meeting_name, username, socketRef.current, setPeers, errorHandler);
     rtcHandler.current.initialize();
+    // Set the local stream in state to trigger a re-render
+    setLocalStream(rtcHandler.current.localStream);
   };
 
   useEffect(() => {
@@ -133,8 +136,8 @@ const MeetingPage = () => {
         />
     
         {/* Bottom-left overlay for the username */}
-        <div className="absolute bottom-2 left-2 z-10 backdrop-blur-md bg-white bg-opacity-50 text-md px-2 py-1 text-white rounded">
-          <p className="video-username">{peerName}</p>
+        <div className="absolute bottom-2 left-2 z-10 backdrop-blur-md bg-gray-100 bg-opacity-60 text-md px-4 py-2 text-white rounded">
+          <p className="video-username flex flex-row gap-2 align-center items-center"><FaUser size={10}/>{peerName}</p>
         </div>
       </div>
     );
@@ -147,58 +150,57 @@ return (
       <Header eventName={meeting_name} timeLeft={username} />
       <div className="flex-grow">
       <div className="flex flex-wrap gap-4 justify-center p-4 ml-4">
-          {rtcHandler.current.localStream && (
-            <VideoElement stream={rtcHandler.current.localStream} muted={true} peerName="You" />
-          )}
+      {localStream && (
+  <VideoElement stream={localStream} muted={true} peerName="You" />
+)}
           {Object.entries(peers).map(([peerUsername, peer]) => (
             peerUsername !== username && (
               <VideoElement
-                key={peerUsername}
-                stream={peer.stream}
-                muted={false}
-                peerName={peerUsername}
-              />
+              key={peerUsername}
+              stream={peer.stream}
+              muted={false}
+              peerName={peerUsername === 'local' ? 'You' : peerUsername}  
+            />
             )
           ))}
         </div>
       </div>
       <footer className="p-4 flex justify-center space-x-4 border-t border-neutral-700 dark:border-neutral-800">
-  {/* Toggle Video Button */}
-  <button
-    onClick={toggleVideo}
-    className="bg-neutral-200 dark:bg-neutral-800 p-4 rounded-md dark:hover:bg-neutral-700 focus:outline-none"
-  >
-    {isVideoOff ? (
-      <FaVideoSlash className="w-5 h-5 text-red-500" />
-    ) : (
-      <FaVideo className="w-5 h-5 text-black dark:text-white" />
-    )}
-  </button>
+        {/* Toggle Video Button */}
+        <button
+          onClick={toggleVideo}
+          className="bg-neutral-200 dark:bg-neutral-800 p-4 rounded-md dark:hover:bg-neutral-700 focus:outline-none"
+        >
+          {isVideoOff ? (
+            <FaVideoSlash className="w-5 h-5 text-red-500" />
+          ) : (
+            <FaVideo className="w-5 h-5 text-black dark:text-white" />
+          )}
+        </button>
 
-  {/* Toggle Mute Button */}
-  <button
-    onClick={toggleMute}
-    className="bg-neutral-200 dark:bg-neutral-800 p-4 rounded-md dark:hover:bg-neutral-700 focus:outline-none"
-  >
-    {isMuted ? (
-      <FaMicrophoneSlash className="w-5 h-5 text-red-500" />
-    ) : (
-      <FaMicrophone className="w-5 h-5 text-black dark:text-white" />
-    )}
-  </button>
+        {/* Toggle Mute Button */}
+        <button
+          onClick={toggleMute}
+          className="bg-neutral-200 dark:bg-neutral-800 p-4 rounded-md dark:hover:bg-neutral-700 focus:outline-none"
+        >
+          {isMuted ? (
+            <FaMicrophoneSlash className="w-5 h-5 text-red-500" />
+          ) : (
+            <FaMicrophone className="w-5 h-5 text-black dark:text-white" />
+          )}
+        </button>
 
-  {/* End Call Button */}
-  <button
-    onClick={() => navigate('/')}
-    className="bg-red-500 text-white p-4 rounded-md"
-  >
-    <div className="flex flex-row gap-2">
-      <MdCallEnd className="w-6 h-6" /> 
-      <p className="font-medium">Leave</p>
-    </div>
-  </button>
-</footer>
-
+        {/* End Call Button */}
+        <button
+          onClick={() => navigate('/')}
+          className="bg-red-500 text-white p-4 rounded-md"
+        >
+          <div className="flex flex-row gap-2">
+            <MdCallEnd className="w-6 h-6" /> 
+            <p className="font-medium">Leave</p>
+          </div>
+        </button>
+    </footer>
     </div>
 
     {/* Chat Column using flex instead of absolute */}

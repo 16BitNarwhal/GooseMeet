@@ -27,25 +27,27 @@ class RTCHandler {
     this.handleUsers(users);
   }
 
-  async initializeLocalStream() {
+async initializeLocalStream() {
     try {
       this.localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       this.hasMediaDevices = true;
 
-      // Log out details of the localStream
-      console.log("Local Stream:", this.localStream);
+      console.log("Local Stream initialized:", this.localStream);
 
       this.localStream.getTracks().forEach(track => {
         console.log(`Track kind: ${track.kind}, Track ID: ${track.id}, Track enabled: ${track.enabled}`);
       });
+
+      // Trigger re-render of the component once the stream is ready
+      this.setPeers(prevPeers => ({...prevPeers, local: { stream: this.localStream }}));
+      
     } catch (err) {
       console.warn('No media devices found or access denied:', err);
       toast.error('No media devices found or access denied. Continuing without video/audio.');
-      // Create an empty MediaStream to avoid issues with peer connections
       this.localStream = new MediaStream();
       this.hasMediaDevices = false;
     }
-  }
+}
 
   setupSocketListeners() {
     this.socket.on('user_joined', this.handleUserJoined);
