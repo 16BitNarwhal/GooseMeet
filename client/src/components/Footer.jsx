@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { FaMicrophone, FaMicrophoneSlash, FaVideo, FaVideoSlash } from 'react-icons/fa';  // FontAwesome icons
 import ToggleButton from './ToggleButton';
 import EndCallButton from './EndCallButton';
+import toast from 'react-hot-toast';
 
 function Footer() {
   // State for microphone
   const [isMuted, setIsMuted] = useState(false);
   const handleToggleMute = () => {
+    toast.error("What toast test")
     setIsMuted(!isMuted);
   };
 
