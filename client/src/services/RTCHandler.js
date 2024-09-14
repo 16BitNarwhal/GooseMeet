@@ -81,12 +81,12 @@ class RTCHandler {
           username: process.env.REACT_APP_TURN_SERVER_USERNAME,
           credential: process.env.REACT_APP_TURN_SERVER_CREDENTIALS,
         },
-        // {
-        //   urls: "turns:global.relay.metered.ca:443?transport=tcp",
-        //   username: process.env.REACT_APP_TURN_SERVER_USERNAME,
-        //   credential: process.env.REACT_APP_TURN_SERVER_CREDENTIALS,
-        // },
-        // { urls: 'stun:stun.l.google.com:19302' },
+        {
+          urls: "turns:global.relay.metered.ca:443?transport=tcp",
+          username: process.env.REACT_APP_TURN_SERVER_USERNAME,
+          credential: process.env.REACT_APP_TURN_SERVER_CREDENTIALS,
+        },
+        { urls: 'stun:stun.l.google.com:19302' },
       ]
     });
 

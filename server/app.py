@@ -117,4 +117,4 @@ def handle_ice_candidate(data):
     emit('ice_candidate', data, room=to_sid, skip_sid=request.sid)
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True, allow_unsafe_werkzeug=True)
+    socketio.run(app, debug=True)
