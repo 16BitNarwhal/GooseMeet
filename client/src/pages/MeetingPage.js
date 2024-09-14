@@ -115,65 +115,65 @@ const MeetingPage = () => {
     return null;
   }
 
-    const VideoElement = React.memo(({ stream, muted, peerName, isSpeaking }) => {
-      const videoRef = useRef();
-      const [speaking, setSpeaking] = useState(false);
-    
-      useEffect(() => {
-        if (videoRef.current && stream) {
-          videoRef.current.srcObject = stream;
+  const VideoElement = React.memo(({ stream, muted, peerName, isLocal }) => {
+    const videoRef = useRef();
+    const [speaking, setSpeaking] = useState(false);
+  
+    useEffect(() => {
+      if (videoRef.current && stream) {
+        videoRef.current.srcObject = stream;
+      }
+    }, [stream]);
+  
+    // Detect speaking with AudioContext
+    useEffect(() => {
+      if (!stream || muted) return;
+  
+      const audioContext = new AudioContext();
+      const analyser = audioContext.createAnalyser();
+      const microphone = audioContext.createMediaStreamSource(stream);
+      microphone.connect(analyser);
+      analyser.fftSize = 512;
+  
+      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+      let speakingDetected = false;
+  
+      const detectSpeaking = () => {
+        analyser.getByteFrequencyData(dataArray);
+        const volume = dataArray.reduce((a, b) => a + b) / dataArray.length;
+  
+        // Set speaking state based on volume
+        if (volume > 22 && !speakingDetected) {
+          setSpeaking(true);
+          speakingDetected = true;
+        } else if (volume <= 20 && speakingDetected) {
+          setSpeaking(false);
+          speakingDetected = false;
         }
-      }, [stream]);
-    
-      // Detect speaking with AudioContext
-      useEffect(() => {
-        if (!stream || muted) return;
-    
-        const audioContext = new AudioContext();
-        const analyser = audioContext.createAnalyser();
-        const microphone = audioContext.createMediaStreamSource(stream);
-        microphone.connect(analyser);
-        analyser.fftSize = 512;
-    
-        const dataArray = new Uint8Array(analyser.frequencyBinCount);
-        let speakingDetected = false;
-    
-        const detectSpeaking = () => {
-          analyser.getByteFrequencyData(dataArray);
-          const volume = dataArray.reduce((a, b) => a + b) / dataArray.length;
-    
-          // Set speaking state based on volume
-          if (volume > 22 && !speakingDetected) {
-            setSpeaking(true);
-            speakingDetected = true;
-          } else if (volume <= 20 && speakingDetected) {
-            setSpeaking(false);
-            speakingDetected = false;
-          }
-    
-          requestAnimationFrame(detectSpeaking);
-        };
-    
-        detectSpeaking();
-    
-        return () => {
-          audioContext.close();
-        };
-      }, [stream, muted]);
+  
+        requestAnimationFrame(detectSpeaking);
+      };
+  
+      detectSpeaking();
+  
+      return () => {
+        audioContext.close();
+      };
+    }, [stream, muted]);
   
     return (
       <div
-      className={`relative rounded-md w-[450px] h-[250px] flex justify-center items-center text-white text-sm ${
-        speaking ? 'outline outline-4 outline-green-500 rounded-md' : 'outline outline-4 outline-transparent rounded-md'
-      }`}
-    >
+        className={`relative rounded-md w-[450px] h-[250px] flex justify-center items-center text-white text-sm ${
+          speaking ? 'outline outline-4 outline-green-500 rounded-md' : 'outline outline-4 outline-transparent rounded-md'
+        }`}
+      >
         {/* Video Element or Placeholder */}
-        {stream && !muted ? (
+        {stream ? (
           <video
             ref={videoRef}
             autoPlay
             playsInline
-            muted={muted}
+            muted={isLocal ? true : muted}  // Always mute local stream
             className="w-full h-full rounded-md object-cover"
           />
         ) : (

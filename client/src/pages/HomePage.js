@@ -58,7 +58,7 @@ const HomePage = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-white dark:bg-neutral-900">
       <Toaster position="top-center" reverseOrder={false} />
-      <h1 className="text-4xl font-bold mb-8 dark:text-white">GooseMeet</h1>
+      <h1 className="text-4xl font-bold mb-8 dark:text-white">Goose Meet</h1>
 
       {/* Input for Username */}
       <div className="w-full max-w-md">
