@@ -9,11 +9,13 @@ def log(level: str, message: str, room=''):
         'WARNING': '\033[93m',
         'ERROR': '\033[91m',
         'CRITICAL': '\033[41m',
+        'RESET': '\033[0m'
     }
 
-    color = color_map.get(level, '\033[0m')
+    color = color_map.get(level, color_map['RESET'])
     room = f"[{room}] " if room else ''
-    print(f"{color}{level} {room}- {room}{'\033[0m'}", flush=True)
+    print(f"{color}{level} {room}- {message}{color_map['RESET']}", flush=True)
+
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -22,7 +24,7 @@ socketio = SocketIO(app, cors_allowed_origins="*", manage_session=False)
 # TODO: create database file with in-memory SQLite3 and persistent db file
 # TODO: setup sockets and routes
 
-@app.route('/api/create-room', methods=['POST'])
+@app.route('/api/start-room', methods=['POST'])
 def create_room():
     data = request.get_json()
     username = data['username']
