@@ -34,7 +34,6 @@ def get_filler_words():
 
 
 def get_ai_response(user_input, conversation_history):
-    """get AI response using Cohere's chat completion and Pinecone for context."""
 
     embeddings = OpenAIEmbeddings(openai_api_key=os.environ["OPENAI_API_KEY"])
     vector_store = PineconeVectorStore(
@@ -59,7 +58,7 @@ def get_ai_response(user_input, conversation_history):
             top_k=1,
             include_metadata=True,
             filter={"meeting_number": {"$exists": True}},
-            sort="meeting_number"
+            sort={"meeting_date": -1}
         )
         if query_response['matches']:
             last_meeting = query_response['matches'][0]
@@ -67,7 +66,7 @@ def get_ai_response(user_input, conversation_history):
         else:
             full_query = f"I'm sorry, I don't have any information about previous meetings. Regarding your current question: {user_input}"
     else:
-        full_query = f"Conversation history:\n{conversation_context}\n\nUser's latest input: {user_input}\n\nPlease provide a response based on this context."
+        full_query = f"Conversation history:\n{conversation_context}\n\nUser's latest input: {user_input}\n\nProvide a concise response based on this context."
 
     response = qa({"query": full_query})
     ai_response = response["result"]
@@ -111,9 +110,8 @@ def create_conversation_embedding(conversation_id, conversation_text, meeting_nu
 
 def get_next_meeting_number():
     try:
-        # Query Pinecone for the highest meeting number
         query_response = index.query(
-            vector=[0] * 1536,  # Dummy vector
+            vector=[0] * 1536,
             top_k=1,
             include_metadata=True,
             filter={"meeting_number": {"$exists": True}}
@@ -122,9 +120,9 @@ def get_next_meeting_number():
             highest_meeting_number = max(int(match['metadata']['meeting_number']) for match in query_response['matches'])
             return highest_meeting_number + 1
         else:
-            return 1  # If no meetings exist yet, start with 1
+            return 1
     except Exception as e:
         print(f"Error getting next meeting number: {e}")
-        return 1  # Default to 1 if there's an error
+        return 1
 
 
