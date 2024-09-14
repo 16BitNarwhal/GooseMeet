@@ -1,7 +1,9 @@
 
 import Header from './components/Header';
 import VideoFeed from './components/VideoFeed';
-
+import Duck from './components/Duck';
+import Footer from './components/Footer';
+import Chat from './components/Chat'
 function App() {
   return (
     <div className="relative h-screen flex bg-white dark:bg-neutral-900">
@@ -9,14 +11,11 @@ function App() {
         <Header />
         <div className="flex-grow">
           <VideoFeed />
+          <Duck/>
         </div>
-        {/* <Footer /> */}
+        <Footer/>
       </div>
-
-      <div className="absolute right-0 top-0 h-full w-1/5 border-l p-4 border-neutral-200 dark:border-neutral-800">
-        <div className="h-full overflow-y-auto">
-        </div>
-      </div>
+      <Chat/>
     </div>
   );
 }
