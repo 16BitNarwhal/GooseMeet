@@ -4,6 +4,11 @@ import io from 'socket.io-client';
 import RTCHandler from '../services/rtcHandler';
 import Chat from '../components/Chat';
 import ChatHandler from '../services/chatHandler';
+import Header from '../components/Header';
+
+import { FaMicrophone, FaMicrophoneSlash, FaVideo, FaVideoSlash } from 'react-icons/fa';  // FontAwesome icons
+import { MdCallEnd } from 'react-icons/md';
+
 
 import Button from '../components/Button';
 import toast, { Toaster } from 'react-hot-toast';
@@ -107,34 +112,39 @@ const MeetingPage = () => {
 
   const VideoElement = React.memo(({ stream, muted, peerName }) => {
     const videoRef = useRef();
-
+  
     useEffect(() => {
       if (videoRef.current && stream) {
         videoRef.current.srcObject = stream;
       }
     }, [stream]);
-
+  
     return (
-      <div className="video-container">
-        <video ref={videoRef} autoPlay playsInline muted={muted} className="video-element" />
-        <p className="video-username">{peerName}</p>
+      <div className="relative rounded-md w-[500px] h-[300px] flex justify-center items-center text-white text-sm">
+        {/* Video Element */}
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted={muted}
+          className="w-full h-full rounded-md object-cover"
+        />
+    
+        {/* Bottom-left overlay for the username */}
+        <div className="absolute bottom-2 left-2 z-10 backdrop-blur-md bg-white bg-opacity-50 text-md px-2 py-1 text-white rounded">
+          <p className="video-username">{peerName}</p>
+        </div>
       </div>
     );
   });
 
-  if (!username || !rtcHandler.current) {
-    return null;
-  }
-
-  return (
-    <div className="flex flex-col h-screen bg-gray-100">
-      <Toaster position="top-center" reverseOrder={false} />
-      <header className="bg-blue-600 text-white p-4">
-        <h1 className="text-2xl">Meeting: {meeting_name}</h1>
-        <p>Welcome, {username}!</p>
-      </header>
-      <main className="flex flex-1 overflow-hidden">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
+return (
+  <div className="relative h-screen flex bg-white dark:bg-neutral-900">
+    {/* Main content: Header, Videos, Footer */}
+    <div className="flex flex-col w-4/5 pt-8 h-full">
+      <Header eventName={meeting_name} timeLeft={username} />
+      <div className="flex-grow">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4 ml-4">
           {rtcHandler.current.localStream && (
             <VideoElement stream={rtcHandler.current.localStream} muted={true} peerName="You" />
           )}
@@ -149,14 +159,51 @@ const MeetingPage = () => {
             )
           ))}
         </div>
-        <Chat chatHandler={chatHandler.current} initialChatHistory={chatHistory} />
-      </main>
-      <footer className="bg-gray-200 p-4 flex justify-center space-x-4">
-        <Button onClick={toggleMute}>{isMuted ? 'Unmute' : 'Mute'}</Button>
-        <Button onClick={toggleVideo}>{isVideoOff ? 'Turn On Video' : 'Turn Off Video'}</Button>
-        <Button className="bg-red-500 hover:bg-red-600" onClick={() => navigate('/')}>Leave Meeting</Button>
-      </footer>
+      </div>
+      <footer className="p-4 flex justify-center space-x-4 border-t border-neutral-700 dark:border-neutral-800">
+  {/* Toggle Video Button */}
+  <button
+    onClick={toggleVideo}
+    className="bg-neutral-200 dark:bg-neutral-800 p-4 rounded-md dark:hover:bg-neutral-700 focus:outline-none"
+  >
+    {isVideoOff ? (
+      <FaVideoSlash className="w-5 h-5 text-red-500" />
+    ) : (
+      <FaVideo className="w-5 h-5 text-black dark:text-white" />
+    )}
+  </button>
+
+  {/* Toggle Mute Button */}
+  <button
+    onClick={toggleMute}
+    className="bg-neutral-200 dark:bg-neutral-800 p-4 rounded-md dark:hover:bg-neutral-700 focus:outline-none"
+  >
+    {isMuted ? (
+      <FaMicrophoneSlash className="w-5 h-5 text-red-500" />
+    ) : (
+      <FaMicrophone className="w-5 h-5 text-black dark:text-white" />
+    )}
+  </button>
+
+  {/* End Call Button */}
+  <button
+    onClick={() => navigate('/')}
+    className="bg-red-500 text-white p-4 rounded-md"
+  >
+    <div className="flex flex-row gap-2">
+      <MdCallEnd className="w-6 h-6" /> 
+      <p className="font-medium">Leave</p>
     </div>
+  </button>
+</footer>
+
+    </div>
+
+    {/* Chat Column using flex instead of absolute */}
+    <div className="flex-shrink-0 w-1/5 h-full border-l border-neutral-800 p-4 dark:bg-neutral-900 overflow-y-auto">
+      <Chat chatHandler={chatHandler.current} initialChatHistory={chatHistory} peers={peers} />
+    </div>
+  </div>
   );
 };
 
