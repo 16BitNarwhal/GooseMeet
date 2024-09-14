@@ -5,6 +5,7 @@ import RTCHandler from '../services/rtcHandler';
 import Chat from '../components/Chat';
 import ChatHandler from '../services/chatHandler';
 import Header from '../components/Header';
+import { FaUser } from 'react-icons/fa';
 
 import { FaMicrophone, FaMicrophoneSlash, FaVideo, FaVideoSlash } from 'react-icons/fa';  // FontAwesome icons
 import { MdCallEnd } from 'react-icons/md';
@@ -135,8 +136,8 @@ const MeetingPage = () => {
         />
     
         {/* Bottom-left overlay for the username */}
-        <div className="absolute bottom-2 left-2 z-10 backdrop-blur-md bg-white bg-opacity-50 text-md px-2 py-1 text-white rounded">
-          <p className="video-username">{peerName}</p>
+        <div className="absolute bottom-2 left-2 z-10 backdrop-blur-md bg-gray-100 bg-opacity-60 text-md px-4 py-2 text-white rounded">
+          <p className="video-username flex flex-row gap-2 align-center items-center"><FaUser size={10}/>{peerName}</p>
         </div>
       </div>
     );
