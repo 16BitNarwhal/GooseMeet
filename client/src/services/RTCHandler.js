@@ -3,8 +3,8 @@ import toast from 'react-hot-toast';
 const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 class RTCHandler {
-  constructor(meeting_id, username, socket, setPeers, onError) {
-    this.meeting_id = meeting_id;
+  constructor(meeting_name, username, socket, setPeers, onError) {
+    this.meeting_name = meeting_name;
     this.username = username;
     this.socket = socket;
     this.localStream = null;
@@ -18,7 +18,7 @@ class RTCHandler {
   async initialize() {
     await this.initializeLocalStream();
     this.setupSocketListeners();
-    const response = await fetch(`${apiUrl}/api/users/${this.meeting_id}`);
+    const response = await fetch(`${apiUrl}/api/users/${this.meeting_name}`);
     if (!response.ok) {
       this.onError('Failed to fetch users. Please try again.');
       return;
@@ -81,12 +81,12 @@ class RTCHandler {
           username: process.env.REACT_APP_TURN_SERVER_USERNAME,
           credential: process.env.REACT_APP_TURN_SERVER_CREDENTIALS,
         },
-        {
-          urls: "turns:global.relay.metered.ca:443?transport=tcp",
-          username: process.env.REACT_APP_TURN_SERVER_USERNAME,
-          credential: process.env.REACT_APP_TURN_SERVER_CREDENTIALS,
-        },
-        { urls: 'stun:stun.l.google.com:19302' },
+        // {
+        //   urls: "turns:global.relay.metered.ca:443?transport=tcp",
+        //   username: process.env.REACT_APP_TURN_SERVER_USERNAME,
+        //   credential: process.env.REACT_APP_TURN_SERVER_CREDENTIALS,
+        // },
+        // { urls: 'stun:stun.l.google.com:19302' },
       ]
     });
 
@@ -129,7 +129,7 @@ class RTCHandler {
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
         this.socket.emit('answer', {
-          meeting_id: this.meeting_id,
+          meeting_name: this.meeting_name,
           answer: pc.localDescription,
           from: this.username,
           to: peerUsername
@@ -156,7 +156,7 @@ class RTCHandler {
     if (event.candidate) {
       console.log(`Sending ICE candidate to ${peerUsername}`);
       this.socket.emit('ice_candidate', {
-        meeting_id: this.meeting_id,
+        meeting_name: this.meeting_name,
         candidate: event.candidate,
         from: this.username,
         to: peerUsername
@@ -192,7 +192,7 @@ class RTCHandler {
             .then(offer => pc.setLocalDescription(offer))
             .then(() => {
               this.socket.emit('offer', {
-                meeting_id: this.meeting_id,
+                meeting_name: this.meeting_name,
                 offer: pc.localDescription,
                 from: this.username,
                 to: user

@@ -23,14 +23,14 @@ socketio = SocketIO(app, cors_allowed_origins="*", manage_session=False)
 
 meetings = {}
 
-@app.route('/api/start-meeting', methods=['POST'])
+@app.route('/api/create-meeting', methods=['POST'])
 def create_meeting():
     data = request.get_json()
     username = data['username']
     meeting_name = data['meeting_name']
 
     meetings[meeting_name] = {
-        'users': [],
+        'users': {}, # sid: username
         'messages': [], # sender, content, type, time
     }
 
@@ -38,9 +38,9 @@ def create_meeting():
 
     log('INFO', f'[{username}] created meeting', meeting_name)
 
-    return jsonify({'success': True})
+    return jsonify({'meeting_name': meeting_name})
 
-@app.route('/api/meeting/<meeting_name>', methods=['GET'])
+@app.route('/api/messages/<meeting_name>', methods=['GET'])
 def get_messages(meeting_name):
     if meeting_name not in meetings:
         return jsonify({'error': 'meeting not found'}), 404
@@ -117,4 +117,4 @@ def handle_ice_candidate(data):
     emit('ice_candidate', data, room=to_sid, skip_sid=request.sid)
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True)
+    socketio.run(app, debug=True, allow_unsafe_werkzeug=True)

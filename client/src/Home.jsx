@@ -46,9 +46,9 @@ function Home() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username }),
+        body: JSON.stringify({ username, meeting_name: meetCode }),
       });
-      const generatedCode = (await response.json()).meeting_id;
+      const generatedCode = (await response.json()).meeting_name;
       navigate(`/meet/${generatedCode}`, { state: { username } });
     } catch (error) {
       toast.error('Failed to create meeting. Please try again.');
@@ -116,12 +116,22 @@ function Home() {
 
         {/* For Create New Meeting */}
         {isCreating && (
-          <button
-            onClick={handleCreateMeet}
-            className="bg-green-500 hover:bg-green-600 text-white w-full px-4 py-2 rounded"
-          >
-            Create and Join
-          </button>
+          <div className="mb-4">
+            <label className="block mb-2 text-gray-600 dark:text-gray-400">Meeting Code</label>
+            <input
+              type="text"
+              placeholder="Enter meeting code"
+              value={meetCode}
+              onChange={(e) => setMeetCode(e.target.value)}
+              className="text-white w-full px-3 py-2 bg-neutral-800 rounded"
+            />
+            <button
+              onClick={handleCreateMeet}
+              className="bg-green-500 hover:bg-green-600 text-white mt-4 w-full px-4 py-2 rounded"
+            >
+              Create and Join
+            </button>
+          </div>
         )}
       </div>
     </div>
