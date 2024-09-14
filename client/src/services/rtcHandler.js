@@ -49,7 +49,6 @@ async initializeLocalStream() {
     }
 }
 
-
   setupSocketListeners() {
     this.socket.on('user_joined', this.handleUserJoined);
     this.socket.on('user_left', this.handleUserLeft);

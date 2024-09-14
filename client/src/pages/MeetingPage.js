@@ -201,7 +201,6 @@ return (
           </div>
         </button>
     </footer>
-
     </div>
 
     {/* Chat Column using flex instead of absolute */}

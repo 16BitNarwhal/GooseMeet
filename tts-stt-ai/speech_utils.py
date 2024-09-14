@@ -20,7 +20,7 @@ def text_to_speech(text, output_file="speech.mp3", voice="alloy"):
 
 
 def speech_to_text(audio_file):
-    """Convert speech to text using OpenAI's Whisper model."""
+    """converts speech to text using OpenAI's whisper model."""
     with open(audio_file, "rb") as audio:
         transcript = client.audio.transcriptions.create(
             model="whisper-1",

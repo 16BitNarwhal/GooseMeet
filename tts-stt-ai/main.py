@@ -17,7 +17,7 @@ def is_silent(data, threshold=500):
 
 
 def record_audio(filename="input.wav", silent=False, duration=None):
-    """Record audio from the microphone until silence is detected or a duration is reached."""
+    """records audio from the microphone until silence is detected or a duration is reached."""
     CHUNK = 1024
     FORMAT = pyaudio.paInt16
     CHANNELS = 1
@@ -85,7 +85,7 @@ def record_audio(filename="input.wav", silent=False, duration=None):
 
 
 def play_audio(file_path, stop_event):
-    """Play an audio file with interruption support."""
+    """plays an audio file with interruption support."""
     pygame.mixer.init()
     pygame.mixer.music.load(file_path)
     pygame.mixer.music.play()

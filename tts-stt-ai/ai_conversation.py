@@ -32,8 +32,8 @@ def get_filler_words():
 
 
 def get_ai_response(user_input, conversation_history):
-    """Get AI response using OpenAI's chat completion and Pinecone for context."""
-    # Initialize embeddings and vector store
+    """get AI response using OpenAI's chat completion and Pinecone for context..."""
+
     embeddings = OpenAIEmbeddings(openai_api_key=os.environ["OPENAI_API_KEY"])
     vector_store = PineconeVectorStore(
         index=index, embedding=embeddings, text_key="text"
@@ -62,7 +62,6 @@ def get_ai_response(user_input, conversation_history):
 
 
 def save_conversation_context():
-    """Save the entire conversation context to Pinecone."""
     pass
 
 
