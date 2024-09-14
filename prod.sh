@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export REACT_APP_API_URL="???"
+export REACT_APP_API_URL="goosemeet.co"
 export PRODUCTION="true"
 
 (cd client && rm -rf build && npm i && npm run build)
