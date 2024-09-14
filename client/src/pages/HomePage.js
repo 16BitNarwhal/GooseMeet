@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Input, Button } from "../components";
 import toast, { Toaster } from 'react-hot-toast';
 
 const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
@@ -8,6 +7,7 @@ const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 const HomePage = () => {
   const [meetCode, setMeetCode] = useState('');
   const [username, setUsername] = useState('');
+  const [isCreating, setIsCreating] = useState(false); // State to toggle between join/create
   const navigate = useNavigate();
 
   const handleJoinMeet = () => {
@@ -56,28 +56,83 @@ const HomePage = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-white dark:bg-neutral-900">
       <Toaster position="top-center" reverseOrder={false} />
-      <h1 className="text-4xl font-bold mb-8">GooseMeet</h1>
+      <h1 className="text-4xl font-bold mb-8 dark:text-white">GooseMeet</h1>
+
+      {/* Input for Username */}
       <div className="w-full max-w-md">
-        <Input
+        <input
           type="text"
-          placeholder="Enter your username (required)"
+          placeholder="Enter your username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          className="w-full mb-4"
+          className="text-white w-full mb-4 px-3 py-2 bg-neutral-800 rounded"
         />
-        <div className="flex space-x-2 mb-4">
-          <Input
-            type="text"
-            placeholder="Enter meeting code"
-            value={meetCode}
-            onChange={(e) => setMeetCode(e.target.value)}
-            className="flex-grow"
-          />
-          <Button onClick={handleJoinMeet}>Join</Button>
+
+        {/* Toggle between Join and Create */}
+        <div className="flex w-full space-x-2 mb-4">
+          <button
+            className={`w-1/2 px-4 py-2 rounded-md ${
+              !isCreating
+                ? 'bg-neutral-800 text-white' // Active tab style
+                : 'bg-transparent text-gray-500 hover:bg-neutral-800 hover:text-white' // Inactive tab style with hover effect
+            }`}
+            onClick={() => setIsCreating(false)}
+          >
+            Join Meeting
+          </button>
+          <button
+            className={`w-1/2 px-4 py-2 rounded-md ${
+              isCreating
+                ? 'bg-neutral-800 text-white' // Active tab style
+                : 'bg-transparent text-gray-500 hover:bg-neutral-800 hover:text-white' // Inactive tab style with hover effect
+            }`}
+            onClick={() => setIsCreating(true)}
+          >
+            Create New Meeting
+          </button>
         </div>
-        <Button onClick={handleCreateMeet} className="w-full">Create New Meeting</Button>
+
+        {/* Show meeting code input only for "Join" */}
+        {!isCreating && (
+          <div className="mb-4">
+            <label className="block mb-2 text-gray-600 dark:text-gray-400">Meeting Code</label>
+            <input
+              type="text"
+              placeholder="Enter meeting code"
+              value={meetCode}
+              onChange={(e) => setMeetCode(e.target.value)}
+              className="text-white w-full px-3 py-2 bg-neutral-800 rounded"
+            />
+            <button
+              onClick={handleJoinMeet}
+              className="bg-gray-200 text-black hover:bg-gray-400 mt-4 w-full px-4 py-2 rounded"
+            >
+              Join Meeting
+            </button>
+          </div>
+        )}
+
+        {/* For Create New Meeting */}
+        {isCreating && (
+          <div className="mb-4">
+            <label className="block mb-2 text-gray-600 dark:text-gray-400">Meeting Code</label>
+            <input
+              type="text"
+              placeholder="Enter meeting code"
+              value={meetCode}
+              onChange={(e) => setMeetCode(e.target.value)}
+              className="text-white w-full px-3 py-2 bg-neutral-800 rounded"
+            />
+            <button
+              onClick={handleCreateMeet}
+              className="bg-green-500 hover:bg-green-600 text-white mt-4 w-full px-4 py-2 rounded"
+            >
+              Create and Join
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
