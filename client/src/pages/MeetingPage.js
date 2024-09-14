@@ -115,29 +115,79 @@ const MeetingPage = () => {
     return null;
   }
 
-  const VideoElement = React.memo(({ stream, muted, peerName }) => {
-    const videoRef = useRef();
-  
-    useEffect(() => {
-      if (videoRef.current && stream) {
-        videoRef.current.srcObject = stream;
-      }
-    }, [stream]);
+    const VideoElement = React.memo(({ stream, muted, peerName, isSpeaking }) => {
+      const videoRef = useRef();
+      const [speaking, setSpeaking] = useState(false);
+    
+      useEffect(() => {
+        if (videoRef.current && stream) {
+          videoRef.current.srcObject = stream;
+        }
+      }, [stream]);
+    
+      // Detect speaking with AudioContext
+      useEffect(() => {
+        if (!stream || muted) return;
+    
+        const audioContext = new AudioContext();
+        const analyser = audioContext.createAnalyser();
+        const microphone = audioContext.createMediaStreamSource(stream);
+        microphone.connect(analyser);
+        analyser.fftSize = 512;
+    
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+        let speakingDetected = false;
+    
+        const detectSpeaking = () => {
+          analyser.getByteFrequencyData(dataArray);
+          const volume = dataArray.reduce((a, b) => a + b) / dataArray.length;
+    
+          // Set speaking state based on volume
+          if (volume > 22 && !speakingDetected) {
+            setSpeaking(true);
+            speakingDetected = true;
+          } else if (volume <= 20 && speakingDetected) {
+            setSpeaking(false);
+            speakingDetected = false;
+          }
+    
+          requestAnimationFrame(detectSpeaking);
+        };
+    
+        detectSpeaking();
+    
+        return () => {
+          audioContext.close();
+        };
+      }, [stream, muted]);
   
     return (
-      <div className="relative rounded-md w-[450px] h-[250px] flex justify-center items-center text-white text-sm">
-        {/* Video Element */}
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted={muted}
-          className="w-full h-full rounded-md object-cover"
-        />
-    
+      <div
+      className={`relative rounded-md w-[450px] h-[250px] flex justify-center items-center text-white text-sm ${
+        speaking ? 'outline outline-4 outline-green-500 rounded-md' : 'outline outline-4 outline-transparent rounded-md'
+      }`}
+    >
+        {/* Video Element or Placeholder */}
+        {stream && !muted ? (
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted={muted}
+            className="w-full h-full rounded-md object-cover"
+          />
+        ) : (
+          <div className="w-full h-full flex justify-center items-center bg-neutral-700 rounded-md">
+            <FaUser size={40} className="text-white" />
+          </div>
+        )}
+  
         {/* Bottom-left overlay for the username */}
         <div className="absolute bottom-2 left-2 z-10 backdrop-blur-md bg-gray-100 bg-opacity-60 text-md px-4 py-2 text-white rounded">
-          <p className="video-username flex flex-row gap-2 align-center items-center"><FaUser size={10}/>{peerName}</p>
+          <p className="video-username flex flex-row gap-2 align-center items-center">
+            <FaUser size={10} />
+            {peerName}
+          </p>
         </div>
       </div>
     );
