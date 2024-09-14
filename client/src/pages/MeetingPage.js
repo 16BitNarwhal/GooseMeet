@@ -73,6 +73,8 @@ const MeetingPage = () => {
 
     rtcHandler.current = new RTCHandler(meeting_name, username, socketRef.current, setPeers, errorHandler);
     rtcHandler.current.initialize();
+    // Set the local stream in state to trigger a re-render
+    setLocalStream(rtcHandler.current.localStream);
   };
 
   useEffect(() => {
@@ -147,17 +149,17 @@ return (
       <Header eventName={meeting_name} timeLeft={username} />
       <div className="flex-grow">
       <div className="flex flex-wrap gap-4 justify-center p-4 ml-4">
-          {rtcHandler.current.localStream && (
-            <VideoElement stream={rtcHandler.current.localStream} muted={true} peerName="You" />
-          )}
+      {localStream && (
+  <VideoElement stream={localStream} muted={true} peerName="You" />
+)}
           {Object.entries(peers).map(([peerUsername, peer]) => (
             peerUsername !== username && (
               <VideoElement
-                key={peerUsername}
-                stream={peer.stream}
-                muted={false}
-                peerName={peerUsername}
-              />
+              key={peerUsername}
+              stream={peer.stream}
+              muted={false}
+              peerName={peerUsername === 'local' ? 'You' : peerUsername}  
+            />
             )
           ))}
         </div>
