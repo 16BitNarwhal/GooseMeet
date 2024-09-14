@@ -14,8 +14,8 @@ services:
     image: jonasal/nginx-certbot
     restart: always
     environment:
-      - CERTBOT_EMAIL=e256zhan@uwaterloo.ca
-      - CERTBOT_DOMAINS=???
+      - CERTBOT_EMAIL=ericzh1616@gmail.com
+      - CERTBOT_DOMAINS=goosemeet.co
     ports:
       - 80:80
       - 443:443
