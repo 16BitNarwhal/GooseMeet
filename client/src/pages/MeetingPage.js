@@ -165,41 +165,41 @@ return (
         </div>
       </div>
       <footer className="p-4 flex justify-center space-x-4 border-t border-neutral-700 dark:border-neutral-800">
-  {/* Toggle Video Button */}
-  <button
-    onClick={toggleVideo}
-    className="bg-neutral-200 dark:bg-neutral-800 p-4 rounded-md dark:hover:bg-neutral-700 focus:outline-none"
-  >
-    {isVideoOff ? (
-      <FaVideoSlash className="w-5 h-5 text-red-500" />
-    ) : (
-      <FaVideo className="w-5 h-5 text-black dark:text-white" />
-    )}
-  </button>
+        {/* Toggle Video Button */}
+        <button
+          onClick={toggleVideo}
+          className="bg-neutral-200 dark:bg-neutral-800 p-4 rounded-md dark:hover:bg-neutral-700 focus:outline-none"
+        >
+          {isVideoOff ? (
+            <FaVideoSlash className="w-5 h-5 text-red-500" />
+          ) : (
+            <FaVideo className="w-5 h-5 text-black dark:text-white" />
+          )}
+        </button>
 
-  {/* Toggle Mute Button */}
-  <button
-    onClick={toggleMute}
-    className="bg-neutral-200 dark:bg-neutral-800 p-4 rounded-md dark:hover:bg-neutral-700 focus:outline-none"
-  >
-    {isMuted ? (
-      <FaMicrophoneSlash className="w-5 h-5 text-red-500" />
-    ) : (
-      <FaMicrophone className="w-5 h-5 text-black dark:text-white" />
-    )}
-  </button>
+        {/* Toggle Mute Button */}
+        <button
+          onClick={toggleMute}
+          className="bg-neutral-200 dark:bg-neutral-800 p-4 rounded-md dark:hover:bg-neutral-700 focus:outline-none"
+        >
+          {isMuted ? (
+            <FaMicrophoneSlash className="w-5 h-5 text-red-500" />
+          ) : (
+            <FaMicrophone className="w-5 h-5 text-black dark:text-white" />
+          )}
+        </button>
 
-  {/* End Call Button */}
-  <button
-    onClick={() => navigate('/')}
-    className="bg-red-500 text-white p-4 rounded-md"
-  >
-    <div className="flex flex-row gap-2">
-      <MdCallEnd className="w-6 h-6" /> 
-      <p className="font-medium">Leave</p>
-    </div>
-  </button>
-</footer>
+        {/* End Call Button */}
+        <button
+          onClick={() => navigate('/')}
+          className="bg-red-500 text-white p-4 rounded-md"
+        >
+          <div className="flex flex-row gap-2">
+            <MdCallEnd className="w-6 h-6" /> 
+            <p className="font-medium">Leave</p>
+          </div>
+        </button>
+    </footer>
 
     </div>
 
