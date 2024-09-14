@@ -11,7 +11,7 @@ class RTCHandler {
     this.peerConnections = {};
     this.setPeers = setPeers;
     this.mediaEnabled = { video: true, audio: true };
-    this.hasMediaDevices = false;
+    this.hasMediaDevices = false; // New flag to indicate if media devices are available
     this.onError = onError;
   }
 
