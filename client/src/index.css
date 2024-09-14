@@ -1,0 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Space Grotesk', sans-serif;
+  background-color: #161616;
+  color: #A6A7A7;
+}
+
+
+button, a, .hoverable {
+  transition: all 0.2s ease; 
+}
+
+button:hover, a:hover, .hoverable:hover {
+  background-color: #f0f0f0; 
+  color: #333;
+}
