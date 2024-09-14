@@ -7,6 +7,8 @@ from langchain_openai import ChatOpenAI
 from langchain_openai import OpenAIEmbeddings
 from langchain_pinecone import PineconeVectorStore
 from pinecone import Pinecone, ServerlessSpec
+import datetime
+from datetime import datetime
 
 client = OpenAI()
 pc = Pinecone(api_key=os.environ.get("PINECONE_API_KEY"))
@@ -32,7 +34,7 @@ def get_filler_words():
 
 
 def get_ai_response(user_input, conversation_history):
-    """get AI response using OpenAI's chat completion and Pinecone for context..."""
+    """get AI response using Cohere's chat completion and Pinecone for context."""
 
     embeddings = OpenAIEmbeddings(openai_api_key=os.environ["OPENAI_API_KEY"])
     vector_store = PineconeVectorStore(
@@ -49,7 +51,24 @@ def get_ai_response(user_input, conversation_history):
 
     qa = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=retriever)
     conversation_context = "\n".join(conversation_history)
-    full_query = f"Conversation history:\n{conversation_context}\n\nUser's latest input: {user_input}\n\nPlease provide a response based on this context."
+
+    if "last meeting" in user_input.lower():
+        # Query for the most recent meeting
+        query_response = index.query(
+            vector=[0] * 1536,  # Dummy vector
+            top_k=1,
+            include_metadata=True,
+            filter={"meeting_number": {"$exists": True}},
+            sort="meeting_number"
+        )
+        if query_response['matches']:
+            last_meeting = query_response['matches'][0]
+            full_query = f"In the last meeting (number {last_meeting['metadata']['meeting_number']} on {last_meeting['metadata']['meeting_date']}), the following was discussed:\n\n{last_meeting['metadata']['text']}\n\nBased on this, {user_input}"
+        else:
+            full_query = f"I'm sorry, I don't have any information about previous meetings. Regarding your current question: {user_input}"
+    else:
+        full_query = f"Conversation history:\n{conversation_context}\n\nUser's latest input: {user_input}\n\nPlease provide a response based on this context."
+
     response = qa({"query": full_query})
     ai_response = response["result"]
 
@@ -65,18 +84,47 @@ def save_conversation_context():
     pass
 
 
-def create_conversation_embedding(conversation_id, conversation_text):
+def create_conversation_embedding(conversation_id, conversation_text, meeting_number):
     embeddings = OpenAIEmbeddings(openai_api_key=os.environ["OPENAI_API_KEY"])
     vector_store = PineconeVectorStore(
         index=index, embedding=embeddings, text_key="text"
     )
 
+    meeting_date = datetime.now().strftime("%Y-%m-%d")
+    meeting_time = datetime.now().strftime("%H:%M:%S")
+
     try:
         vector_store.add_texts(
             texts=[conversation_text],
-            metadatas=[{"conversation_id": conversation_id}],
+            metadatas=[{
+                "conversation_id": conversation_id,
+                "meeting_number": meeting_number,
+                "meeting_date": meeting_date,
+                "meeting_time": meeting_time
+            }],
             ids=[f"{conversation_id}_full_{int(time.time())}"],
         )
         print(f"Saved full conversation embedding to Pinecone: {conversation_id}")
     except Exception as e:
         print(f"Error saving full conversation embedding to Pinecone: {e}")
+
+
+def get_next_meeting_number():
+    try:
+        # Query Pinecone for the highest meeting number
+        query_response = index.query(
+            vector=[0] * 1536,  # Dummy vector
+            top_k=1,
+            include_metadata=True,
+            filter={"meeting_number": {"$exists": True}}
+        )
+        if query_response['matches']:
+            highest_meeting_number = max(int(match['metadata']['meeting_number']) for match in query_response['matches'])
+            return highest_meeting_number + 1
+        else:
+            return 1  # If no meetings exist yet, start with 1
+    except Exception as e:
+        print(f"Error getting next meeting number: {e}")
+        return 1  # Default to 1 if there's an error
+
+
