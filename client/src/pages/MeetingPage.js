@@ -16,6 +16,8 @@ import toast, { Toaster } from 'react-hot-toast';
 const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const MeetingPage = () => {
+  const [localStream, setLocalStream] = useState(null); // Store the local stream in state
+
   const { meeting_name } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -120,7 +122,7 @@ const MeetingPage = () => {
     }, [stream]);
   
     return (
-      <div className="relative rounded-md w-[500px] h-[300px] flex justify-center items-center text-white text-sm">
+      <div className="relative rounded-md w-[450px] h-[250px] flex justify-center items-center text-white text-sm">
         {/* Video Element */}
         <video
           ref={videoRef}
@@ -144,7 +146,7 @@ return (
     <div className="flex flex-col w-4/5 pt-8 h-full">
       <Header eventName={meeting_name} timeLeft={username} />
       <div className="flex-grow">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4 ml-4">
+      <div className="flex flex-wrap gap-4 justify-center p-4 ml-4">
           {rtcHandler.current.localStream && (
             <VideoElement stream={rtcHandler.current.localStream} muted={true} peerName="You" />
           )}
