@@ -5,6 +5,7 @@ import HomePage from './pages/HomePage';
 import MeetingPage from './pages/MeetingPage';
 
 const App = () => {
+  console.log(process.env.REACT_APP_API_URL);
   return (
     <Router>
       <Routes>
