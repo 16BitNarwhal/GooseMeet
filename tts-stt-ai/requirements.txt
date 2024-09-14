@@ -1,0 +1,7 @@
+openai==1.10.0
+pyaudio==0.2.11
+pygame==2.6.0
+chromadb==0.4.24
+langchain==0.0.187
+langchain_pinecone==0.0.18
+langchain_openai==0.0.18
