@@ -1,0 +1,12 @@
+FROM python:3.10.10
+
+WORKDIR /app/server
+
+# install packages
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install gunicorn==23.0.0
+
+COPY . .
+
+CMD ["gunicorn", "--worker-class", "eventlet", "-w", "1", "-b", "0.0.0.0:8080", "app:app"]

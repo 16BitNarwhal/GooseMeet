@@ -1,17 +1,21 @@
-import React, { useState, useRef, useEffect} from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
-import RTCHandler from '../services/RTCHandler.js';
-import toast from 'react-hot-toast';
+import RTCHandler from '../services/rtcHandler';
+import Chat from '../components/Chat';
+import ChatHandler from '../services/chatHandler';
+
+import Button from '../components/Button';
+import toast, { Toaster } from 'react-hot-toast';
 
 const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-function VideoFeed() {
+const MeetingPage = () => {
   const { meeting_name } = useParams();
-  const socketRef = useRef();
   const location = useLocation();
-  const username = location.state?.username;
   const navigate = useNavigate();
+  const socketRef = useRef();
+  const username = location.state?.username;
 
   const rtcHandler = useRef(null);
   const [peers, setPeers] = useState({});
@@ -34,27 +38,31 @@ function VideoFeed() {
       return;
     }
 
-    console.log(`Joining meeting ${meeting_name}`);
+    console.log(`Joining meeting with ID: ${meeting_name}`);
     toast.success(`Joining the meeting...`);
 
     const newSocket = io(apiUrl);
     socketRef.current = newSocket;
 
     newSocket.on('connect', () => {
-      console.log('Connected');
+      console.log('Connected to server');
       newSocket.emit('join', { meeting_name: meeting_name, username: username });
     });
 
     // Fetch chat history manually
     try {
-      const response = await fetch(`${apiUrl}/api/messages/${meeting_name}`);
+      const response = await fetch(`${apiUrl}/api/chat_history/${meeting_name}`);
       const history = await response.json();
       console.log('Fetched chat history:', history);
-      setChatHistory(history); // set the fetched chat history
+      setChatHistory(history); // Set the fetched chat history
     } catch (error) {
       console.error('Failed to fetch chat history:', error);
       toast.error('Failed to load chat history');
     }
+
+    // Initialize the ChatHandler after fetching history
+    chatHandler.current = new ChatHandler(meeting_name, username, socketRef.current, setChatHistory);
+    chatHandler.current.initialize();
 
     rtcHandler.current = new RTCHandler(meeting_name, username, socketRef.current, setPeers, errorHandler);
     rtcHandler.current.initialize();
@@ -62,6 +70,11 @@ function VideoFeed() {
 
   useEffect(() => {
     initializeMeeting();
+
+    return () => {
+      rtcHandler.current.cleanup();
+      socketRef.current.disconnect();
+    };
   }, []);
 
   const toggleMute = () => {
@@ -88,6 +101,10 @@ function VideoFeed() {
     });
   };
 
+  if (!username || !rtcHandler.current) {
+    return null;
+  }
+
   const VideoElement = React.memo(({ stream, muted, peerName }) => {
     const videoRef = useRef();
 
@@ -98,13 +115,9 @@ function VideoFeed() {
     }, [stream]);
 
     return (
-      <div
-        className="camera-input dark:bg-neutral-800 bg-neutral-200 relative rounded-md w-96 h-52  flex justify-center items-center text-white text-sm"
-      >
-        <div className="ml-1 absolute bottom-0 left-0 backdrop-blur-md bg-opacity-60 text-md p-2 text-black dark:text-white">
-          <video ref={videoRef} autoPlay playsInline muted={muted} className="video-element" />
-          <p className="video-username">{peerName}</p>
-        </div>
+      <div className="video-container">
+        <video ref={videoRef} autoPlay playsInline muted={muted} className="video-element" />
+        <p className="video-username">{peerName}</p>
       </div>
     );
   });
@@ -114,27 +127,37 @@ function VideoFeed() {
   }
 
   return (
-    <div className="flex flex-wrap gap-2 pl-8 justify-center mt-4">
-      <VideoElement
-        key={username}
-        stream={rtcHandler.current.localStream}
-        muted={isMuted}
-        peerName={username}
-      />
-      {Object.entries(peers).map(([peerUsername, peer]) => (
-        peerUsername !== username && (
-          <VideoElement
-            key={peerUsername}
-            stream={peer.stream}
-            muted={isMuted}
-            peerName={peerUsername}
-          />
-        )
-        // If no video input, render a placeholder
-        // <div className="w-96 h-52 camera-input"></div>
-      ))}
+    <div className="flex flex-col h-screen bg-gray-100">
+      <Toaster position="top-center" reverseOrder={false} />
+      <header className="bg-blue-600 text-white p-4">
+        <h1 className="text-2xl">Meeting: {meeting_name}</h1>
+        <p>Welcome, {username}!</p>
+      </header>
+      <main className="flex flex-1 overflow-hidden">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
+          {rtcHandler.current.localStream && (
+            <VideoElement stream={rtcHandler.current.localStream} muted={true} peerName="You" />
+          )}
+          {Object.entries(peers).map(([peerUsername, peer]) => (
+            peerUsername !== username && (
+              <VideoElement
+                key={peerUsername}
+                stream={peer.stream}
+                muted={false}
+                peerName={peerUsername}
+              />
+            )
+          ))}
+        </div>
+        <Chat chatHandler={chatHandler.current} initialChatHistory={chatHistory} />
+      </main>
+      <footer className="bg-gray-200 p-4 flex justify-center space-x-4">
+        <Button onClick={toggleMute}>{isMuted ? 'Unmute' : 'Mute'}</Button>
+        <Button onClick={toggleVideo}>{isVideoOff ? 'Turn On Video' : 'Turn Off Video'}</Button>
+        <Button className="bg-red-500 hover:bg-red-600" onClick={() => navigate('/')}>Leave Meeting</Button>
+      </footer>
     </div>
   );
-}
+};
 
-export default VideoFeed;
+export default MeetingPage;
