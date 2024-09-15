@@ -8,6 +8,7 @@ import Header from '../components/Header';
 import { FaUser } from 'react-icons/fa';
 import { MdChatBubble } from 'react-icons/md';
 import { FaTimes } from 'react-icons/fa';
+import { FaRegLightbulb } from "react-icons/fa";
 
 import { FaMicrophone, FaMicrophoneSlash, FaVideo, FaVideoSlash } from 'react-icons/fa';  // FontAwesome icons
 import { MdCallEnd } from 'react-icons/md';
@@ -233,7 +234,7 @@ const MeetingPage = () => {
           speaking ? 'outline outline-4 outline-green-500 rounded-md' : 'outline outline-4 outline-transparent rounded-md'
         }`}
       >
-        <div className="w-full h-full flex justify-center items-center bg-neutral-700 rounded-md">
+        <div className="w-full h-full flex justify-center items-center bg-purple-500 rounded-md">
           <Canvas camera={MrGoose.camera}>
             <OrbitControls />
             <ambientLight />
@@ -245,7 +246,7 @@ const MeetingPage = () => {
         {/* Bottom-left overlay for the username */}
         <div className="absolute bottom-2 left-2 z-10 backdrop-blur-md bg-gray-100 bg-opacity-60 text-md px-4 py-2 text-white rounded">
           <p className="video-username flex flex-row gap-2 align-center items-center">
-            <FaUser size={10} />
+            <FaRegLightbulb size={10} />
             Mr. Goose
           </p>
         </div>
