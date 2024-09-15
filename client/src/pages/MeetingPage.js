@@ -12,6 +12,9 @@ import { FaTimes } from 'react-icons/fa';
 import { FaMicrophone, FaMicrophoneSlash, FaVideo, FaVideoSlash } from 'react-icons/fa';  // FontAwesome icons
 import { MdCallEnd } from 'react-icons/md';
 
+import { Canvas } from "@react-three/fiber";
+import { MrGoose } from "../components/mrgoose/goose";
+import { OrbitControls } from "@react-three/drei";
 
 import Button from '../components/Button';
 import toast, { Toaster } from 'react-hot-toast';
@@ -32,6 +35,8 @@ const MeetingPage = () => {
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false); // New state to manage chat toggle
+
+  const [currentAnimation, setCurrentAnimation] = useState();
 
   const toggleChat = () => {
     setIsChatOpen(!isChatOpen); // Toggles the chat visibility
@@ -240,7 +245,12 @@ const MeetingPage = () => {
       >
         <audio ref={audioRef} autoPlay playsInline />
         <div className="w-full h-full flex justify-center items-center bg-neutral-700 rounded-md">
-          <FaUser size={40} className="text-white" />
+          <Canvas>
+            <OrbitControls />
+            <ambientLight />
+            <directionalLight position={[-50, 5, 5]} />
+            <MrGoose.Model currentAnimation={currentAnimation} />
+          </Canvas>
         </div>
 
         {/* Bottom-left overlay for the username */}
