@@ -20,6 +20,7 @@ import { OrbitControls } from "@react-three/drei";
 import Button from '../components/Button';
 import toast, { Toaster } from 'react-hot-toast';
 import { PlayGooseAudio } from '../components/mrgoose/audio';
+import SpeechToText from '../components/SpeechToText';
 
 const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
@@ -199,32 +200,10 @@ const MeetingPage = () => {
     );
   });
 
-  // TODO: massive, pls split
   const GooseElement = React.memo(() => {
     const [speaking, setSpeaking] = useState(false);
-    const audioBuffer = useRef([]);
-
-    useEffect(() => {
-      socketRef.current.on('connect', () => {
-        setTimeout(() => {
-          socketRef.current.emit('send_audio', { meeting_name, username });
-        }, [])
-      });
   
-      socketRef.current.on('audio_chunk', (data) => {
-        audioBuffer.current.push(new Uint8Array(data));
-      });
-  
-      socketRef.current.on('audio_complete', () => {
-        console.log("MP3 file transmission complete!");
-        playAudio();
-      });
-    }, []);
-  
-    const playAudio = () => {
-      const blob = new Blob(audioBuffer.current, { type: 'audio/mp3' });
-      const url = URL.createObjectURL(blob);
-      
+    const playAudio = (url) => {
       PlayGooseAudio(url, setCurrentAnimation, 8);
     };
   
@@ -250,6 +229,7 @@ const MeetingPage = () => {
             Mr. Goose
           </p>
         </div>
+        <SpeechToText animCallback={playAudio} />
       </div>
     );
   });
