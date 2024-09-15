@@ -9,13 +9,14 @@ const SpeechToText = ({ meeting_name }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [currentAudio, setCurrentAudio] = useState(null);
   const activeRef = useRef(false);
+  const playingRef = useRef(false);
 
   useEffect(() => {
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
       const recognition = new SpeechRecognition();
-      recognition.continuous = false;
+      recognition.continuous = true;
       recognition.interimResults = false;
       recognition.lang = "en-US";
 
@@ -23,10 +24,11 @@ const SpeechToText = ({ meeting_name }) => {
         const current = event.resultIndex;
         const transcript = event.results[current][0].transcript;
         setTranscript(transcript);
-        console.log("TEST D");
-      };
+        console.log("PLAYING", playingRef.current);
+        if (playingRef.current) {
+          return;
+        }
 
-      recognition.onaudioend = () => {
         console.log("Audio capturing ended", transcript);
         if (transcript.toLowerCase().includes("goose")) {
           console.log("GOOSE");
@@ -42,6 +44,8 @@ const SpeechToText = ({ meeting_name }) => {
         if (activeRef.current) {
           console.log("SENDING");
           sendTranscriptToBackend(transcript);
+          playingRef.current = true;
+          console.log("PLAYING", playingRef.current);
         }
       };
 
@@ -80,6 +84,9 @@ const SpeechToText = ({ meeting_name }) => {
         const audio = new Audio(`${apiUrl}${data.speech_file}`);
         setCurrentAudio(audio);
         await audio.play();
+        setTimeout(() => {
+          playingRef.current = false;
+        }, audio.duration * 1000);
       }
     } catch (error) {
       console.error("Error:", error);
