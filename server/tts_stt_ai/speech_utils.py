@@ -22,7 +22,7 @@ def text_to_speech(text):
     timestamp = int(time.time() * 1000)  # Use milliseconds for more uniqueness
     speech_file_path = os.path.join(audio_directory, f"speech_{timestamp}.mp3")
 
-    response = client.audio.speech.create(model="tts-1", voice="alloy", input=text)
+    response = client.audio.speech.create(model="tts-1", voice="echo", input=text)
 
     response.stream_to_file(speech_file_path)
 

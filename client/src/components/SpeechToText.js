@@ -1,44 +1,53 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
 import toast from "react-hot-toast";
 
 const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 const SpeechToText = ({ meeting_name }) => {
-  const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
-  const [recognition, setRecognition] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [currentAudio, setCurrentAudio] = useState(null);
+  const activeRef = useRef(false);
 
   useEffect(() => {
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
       const recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = true;
+      recognition.continuous = false;
+      recognition.interimResults = false;
       recognition.lang = "en-US";
 
       recognition.onresult = (event) => {
         const current = event.resultIndex;
         const transcript = event.results[current][0].transcript;
         setTranscript(transcript);
+        console.log("TEST D");
       };
 
-      setRecognition(recognition);
-    }
-  }, []);
+      recognition.onaudioend = () => {
+        console.log("Audio capturing ended", transcript);
+        if (transcript.toLowerCase().includes("goose")) {
+          console.log("GOOSE");
+          activeRef.current = true;
+        } else if (
+          transcript.toLowerCase().includes("thanks") ||
+          transcript.toLowerCase().includes("thank you")
+        ) {
+          console.log("THANKS");
+          activeRef.current = false;
+        }
 
-  const toggleListening = () => {
-    if (isListening) {
-      recognition.stop();
-      sendTranscriptToBackend(transcript);
-    } else {
+        if (activeRef.current) {
+          console.log("SENDING");
+          sendTranscriptToBackend(transcript);
+        }
+      };
+
       recognition.start();
     }
-    setIsListening(!isListening);
-  };
+  }, []);
 
   const sendTranscriptToBackend = async (text) => {
     setIsLoading(true);
@@ -82,21 +91,6 @@ const SpeechToText = ({ meeting_name }) => {
 
   return (
     <div className="flex flex-col items-start mt-4">
-      <div className="flex items-center space-x-2">
-        <button
-          onClick={toggleListening}
-          className="bg-purple-500 hover:bg-purple-600 text-white p-3 rounded-full focus:outline-none"
-        >
-          {isListening ? (
-            <FaMicrophone className="w-5 h-5" />
-          ) : (
-            <FaMicrophoneSlash className="w-5 h-5" />
-          )}
-        </button>
-        <span className="text-sm font-medium text-black dark:text-white">
-          {isListening ? "Listening..." : "Click to start speech-to-text"}
-        </span>
-      </div>
       {transcript && (
         <div className="mt-2 p-2 bg-neutral-100 dark:bg-neutral-800 rounded-md max-w-xs">
           <p className="text-black dark:text-white text-sm">{transcript}</p>
