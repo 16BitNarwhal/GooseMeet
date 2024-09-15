@@ -200,90 +200,89 @@ const MeetingPage = () => {
     );
   });
 
-return (
-  <div className="relative h-screen flex bg-white dark:bg-neutral-900">
-    {/* Main content: Header, Videos, Footer */}
-    <div className="flex flex-col w-4/5 pt-8 h-full">
-      <Header eventName={meeting_name} timeLeft={username} />
-      <div className="flex-grow">
-      <div className="flex flex-wrap gap-4 justify-center p-4 ml-4">
-      {localStream && (
-  <VideoElement stream={localStream} muted={true} peerName="You" />
-)}
-          {Object.entries(peers).map(([peerUsername, peer]) => (
-            peerUsername !== username && (
-              <VideoElement
-              key={peerUsername}
-              stream={peer.stream}
-              muted={false}
-              peerName={peerUsername === 'local' ? 'You' : peerUsername}  
-            />
-            )
-          ))}
-        </div>
-      </div>
-      <footer className="p-4 flex justify-center space-x-4 border-t border-neutral-700 dark:border-neutral-800">
-        {/* Toggle Video Button */}
-        <button
-          onClick={toggleVideo}
-          className="bg-neutral-200 dark:bg-neutral-800 p-4 rounded-md dark:hover:bg-neutral-700 focus:outline-none"
-        >
-          {isVideoOff ? (
-            <FaVideoSlash className="w-5 h-5 text-red-500" />
-          ) : (
-            <FaVideo className="w-5 h-5 text-black dark:text-white" />
-          )}
-        </button>
-
-        {/* Toggle Mute Button */}
-        <button
-          onClick={toggleMute}
-          className="bg-neutral-200 dark:bg-neutral-800 p-4 rounded-md dark:hover:bg-neutral-700 focus:outline-none"
-        >
-          {isMuted ? (
-            <FaMicrophoneSlash className="w-5 h-5 text-red-500" />
-          ) : (
-            <FaMicrophone className="w-5 h-5 text-black dark:text-white" />
-          )}
-        </button>
-
-        {/* End Call Button */}
-        <button
-          onClick={() => navigate('/')}
-          className="bg-red-500 text-white p-4 rounded-md"
-        >
-          <div className="flex flex-row gap-2">
-            <MdCallEnd className="w-6 h-6" /> 
-            <p className="font-medium">Leave</p>
+  return (
+    <div className="relative h-screen flex bg-white dark:bg-neutral-900">
+      {/* Main content: Header, Videos, Footer */}
+      <div className="flex flex-col w-full md:w-4/5 pt-8 h-full">
+        <Header eventName={meeting_name} timeLeft={username} />
+        <div className="flex-grow">
+        <div className="flex flex-wrap gap-4 justify-center p-4 ml-4">
+        {localStream && (
+    <VideoElement stream={localStream} muted={true} peerName="You" />
+  )}
+            {Object.entries(peers).map(([peerUsername, peer]) => (
+              peerUsername !== username && (
+                <VideoElement
+                key={peerUsername}
+                stream={peer.stream}
+                muted={false}
+                peerName={peerUsername === 'local' ? 'You' : peerUsername}  
+              />
+              )
+            ))}
           </div>
+        </div>
+        <footer className="p-4 flex justify-center space-x-4 border-t border-neutral-700 dark:border-neutral-800">
+          {/* Toggle Video Button */}
+          <button
+            onClick={toggleVideo}
+            className="bg-neutral-200 dark:bg-neutral-800 p-4 rounded-md dark:hover:bg-neutral-700 focus:outline-none"
+          >
+            {isVideoOff ? (
+              <FaVideoSlash className="w-5 h-5 text-red-500" />
+            ) : (
+              <FaVideo className="w-5 h-5 text-black dark:text-white" />
+            )}
+          </button>
+  
+          {/* Toggle Mute Button */}
+          <button
+            onClick={toggleMute}
+            className="bg-neutral-200 dark:bg-neutral-800 p-4 rounded-md dark:hover:bg-neutral-700 focus:outline-none"
+          >
+            {isMuted ? (
+              <FaMicrophoneSlash className="w-5 h-5 text-red-500" />
+            ) : (
+              <FaMicrophone className="w-5 h-5 text-black dark:text-white" />
+            )}
+          </button>
+  
+          {/* End Call Button */}
+          <button
+            onClick={() => navigate('/')}
+            className="bg-red-500 text-white p-4 rounded-md"
+          >
+            <div className="flex flex-row gap-2">
+              <MdCallEnd className="w-6 h-6" /> 
+              <p className="font-medium">Leave</p>
+            </div>
+          </button>
+      </footer>
+      </div>
+  
+      {/* Chat Toggle Button (for mobile screens only) */}
+      <button
+        onClick={toggleChat}
+        className="bg-neutral-200 dark:bg-neutral-800 p-4 rounded-md dark:hover:bg-neutral-700 focus:outline-none md:hidden fixed bottom-4 right-4 z-50"
+      >
+        <MdChatBubble className="w-6 h-6 text-black dark:text-white" />
+      </button>
+      
+      {/* Chat Column / Overlay */}
+      <div
+        className={`fixed inset-0 z-40 bg-neutral-900 p-4 md:w-1/5 h-full border-l border-neutral-800 dark:bg-neutral-900 overflow-y-auto transition-transform transform md:relative ${
+          isChatOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        }`}
+      >
+        <button
+          className="text-white text-xl mb-4 md:hidden"
+          onClick={toggleChat}
+        >
+          <FaTimes />
         </button>
-    </footer>
+        <Chat chatHandler={chatHandler.current} initialChatHistory={chatHistory} peers={peers} />
+      </div>
     </div>
-
-    
-    {/* Chat Toggle Button (for mobile screens only) */}
-    <button
-      onClick={toggleChat}
-      className="bg-neutral-200 dark:bg-neutral-800 p-4 rounded-md dark:hover:bg-neutral-700 focus:outline-none md:hidden fixed bottom-4 right-4 z-50"
-    >
-      <MdChatBubble className="w-6 h-6 text-black dark:text-white" />
-    </button>
-    {/* Chat Column using flex instead of absolute */}
-{/* Chat Column / Overlay */}
-<div
-  className={`fixed inset-0 z-40 bg-neutral-900 p-4 md:w-1/5 h-full border-l border-neutral-800 dark:bg-neutral-900 overflow-y-auto transition-transform transform md:relative ${
-    isChatOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-  }`}
->
-  <button
-    className="text-white text-xl mb-4 md:hidden"
-    onClick={toggleChat}
-  >
-    <FaTimes />
-  </button>
-  <Chat chatHandler={chatHandler.current} initialChatHistory={chatHistory} peers={peers} />
-</div>
-  </div>
   );
 };
 
