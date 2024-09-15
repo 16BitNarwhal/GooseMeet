@@ -74,8 +74,6 @@ export class MrGoose {
             
             // Set no-loop for certain animations
             if (currentAnimation === this.Anims.SPEAK_CYCLE
-                || currentAnimation === this.Anims.SPEAK_START
-                || currentAnimation === this.Anims.SPEAK_STOP
                 || currentAnimation === this.Anims.HONK
                 || currentAnimation === this.Anims.WINGS_SPREAD
                 || currentAnimation === this.Anims.WINGS_STORE
