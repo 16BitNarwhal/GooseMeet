@@ -71,16 +71,7 @@ export class MrGoose {
 
             // Handle current animation
             if (currentAnimation) activeAnimation = actions[currentAnimation]; // Override default if present
-            
-            // Set no-loop for certain animations
-            if (currentAnimation === this.Anims.SPEAK_CYCLE
-                || currentAnimation === this.Anims.HONK
-                || currentAnimation === this.Anims.WINGS_SPREAD
-                || currentAnimation === this.Anims.WINGS_STORE
-            ) {
-                activeAnimation.setLoop(LoopOnce);
-            }
-            
+                        
             // Play and fade animation
             activeAnimation.reset().fadeIn(0.5).play();
             return () => activeAnimation.fadeOut(0.5);
