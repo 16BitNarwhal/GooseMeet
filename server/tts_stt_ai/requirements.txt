@@ -7,3 +7,4 @@ langchain_pinecone==0.0.18
 langchain_openai==0.0.18
 groq==0.11.0
 cohere==5.9.2
+flask==2.0.1

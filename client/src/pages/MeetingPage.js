@@ -9,7 +9,7 @@ import { FaUser } from 'react-icons/fa';
 
 import { FaMicrophone, FaMicrophoneSlash, FaVideo, FaVideoSlash } from 'react-icons/fa';  // FontAwesome icons
 import { MdCallEnd } from 'react-icons/md';
-
+import SpeechToText from '../components/SpeechToText';
 
 import Button from '../components/Button';
 import toast, { Toaster } from 'react-hot-toast';
@@ -215,42 +215,50 @@ return (
           ))}
         </div>
       </div>
-      <footer className="p-4 flex justify-center space-x-4 border-t border-neutral-700 dark:border-neutral-800">
-        {/* Toggle Video Button */}
-        <button
-          onClick={toggleVideo}
-          className="bg-neutral-200 dark:bg-neutral-800 p-4 rounded-md dark:hover:bg-neutral-700 focus:outline-none"
-        >
-          {isVideoOff ? (
-            <FaVideoSlash className="w-5 h-5 text-red-500" />
-          ) : (
-            <FaVideo className="w-5 h-5 text-black dark:text-white" />
-          )}
-        </button>
+      <footer className="p-4 flex justify-between items-center border-t border-neutral-700 dark:border-neutral-800">
+        {/* Speech to Text Button - Moved to the left */}
+        <div className="flex-1">
+          <SpeechToText />
+        </div>
 
-        {/* Toggle Mute Button */}
-        <button
-          onClick={toggleMute}
-          className="bg-neutral-200 dark:bg-neutral-800 p-4 rounded-md dark:hover:bg-neutral-700 focus:outline-none"
-        >
-          {isMuted ? (
-            <FaMicrophoneSlash className="w-5 h-5 text-red-500" />
-          ) : (
-            <FaMicrophone className="w-5 h-5 text-black dark:text-white" />
-          )}
-        </button>
+        {/* Center controls */}
+        <div className="flex justify-center space-x-4">
+          {/* Toggle Video Button */}
+          <button
+            onClick={toggleVideo}
+            className="bg-neutral-200 dark:bg-neutral-800 p-4 rounded-md dark:hover:bg-neutral-700 focus:outline-none"
+          >
+            {isVideoOff ? (
+              <FaVideoSlash className="w-5 h-5 text-red-500" />
+            ) : (
+              <FaVideo className="w-5 h-5 text-black dark:text-white" />
+            )}
+          </button>
 
-        {/* End Call Button */}
-        <button
-          onClick={() => navigate('/')}
-          className="bg-red-500 text-white p-4 rounded-md"
-        >
-          <div className="flex flex-row gap-2">
-            <MdCallEnd className="w-6 h-6" /> 
-            <p className="font-medium">Leave</p>
-          </div>
-        </button>
-    </footer>
+          {/* Toggle Mute Button */}
+          <button
+            onClick={toggleMute}
+            className="bg-neutral-200 dark:bg-neutral-800 p-4 rounded-md dark:hover:bg-neutral-700 focus:outline-none"
+          >
+            {isMuted ? (
+              <FaMicrophoneSlash className="w-5 h-5 text-red-500" />
+            ) : (
+              <FaMicrophone className="w-5 h-5 text-black dark:text-white" />
+            )}
+          </button>
+
+          {/* End Call Button */}
+          <button
+            onClick={() => navigate('/')}
+            className="bg-red-500 text-white p-4 rounded-md"
+          >
+            <div className="flex flex-row gap-2">
+              <MdCallEnd className="w-6 h-6" /> 
+              <p className="font-medium">Leave</p>
+            </div>
+          </button>
+        </div>
+      </footer>
     </div>
 
     {/* Chat Column using flex instead of absolute */}
@@ -262,3 +270,4 @@ return (
 };
 
 export default MeetingPage;
+
