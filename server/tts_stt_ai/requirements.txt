@@ -1,0 +1,9 @@
+openai==1.10.0
+pygame==2.6.0
+chromadb
+langchain
+langchain_pinecone
+langchain_openai
+groq
+cohere
+flask

@@ -11,6 +11,7 @@
     "dotenv": "^16.4.5",
     "mocha": "^10.7.3",
     "puppeteer": "^23.3.0",
+    "react-spinners": "^0.14.1",
     "socket.io-client": "^4.7.5",
     "tailwindcss-animate": "^1.0.7",
     "three": "^0.168.0"
