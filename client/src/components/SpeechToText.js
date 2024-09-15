@@ -11,6 +11,8 @@ const SpeechToText = ({ meeting_name, animCallback }) => {
   const recognitionRef = useRef(null);
   const isListeningRef = useRef(false);
   const playingRef = useRef(false);
+  const currentTranscripts = useRef("");
+  const waitingForFinalTranscript = useRef(false);
 
   useEffect(() => {
     const SpeechRecognition =
@@ -24,8 +26,17 @@ const SpeechToText = ({ meeting_name, animCallback }) => {
       recognitionRef.current.onresult = (event) => {
         const current = event.resultIndex;
         const transcript = event.results[current][0].transcript;
+        currentTranscripts.current += transcript;
+        console.log(transcript);
+        console.log(currentTranscripts.current);
         setTranscript(transcript);
-        sendTranscriptToBackend(transcript);
+        
+        if (waitingForFinalTranscript.current) {
+          console.log("Transcript:", currentTranscripts.current);
+          sendTranscriptToBackend(currentTranscripts.current);
+          currentTranscripts.current = "";
+          waitingForFinalTranscript.current = false;
+        }
       };
     }
 
@@ -47,6 +58,7 @@ const SpeechToText = ({ meeting_name, animCallback }) => {
   const handleKeyUp = (event) => {
     if ((event.code === 'Space' || event.key === 'm') && isListeningRef.current) {
       stopListening();
+      waitingForFinalTranscript.current = true;
     }
   };
 
@@ -62,7 +74,18 @@ const SpeechToText = ({ meeting_name, animCallback }) => {
     if (recognitionRef.current) {
       recognitionRef.current.stop();
       isListeningRef.current = false;
-      console.log('Recognition Stopped!!');
+      console.log('Recognition Stopped!!'); 
+      // repeat twice
+      const audio = new Audio('/honk.mp3');
+      audio.play();
+      setTimeout(() => {
+        const audio = new Audio('/honk.mp3');
+        audio.play();
+      }, 1000);
+      setTimeout(() => {
+        const audio = new Audio('/honk.mp3');
+        audio.play();
+      }, 500);
     }
   };
 
