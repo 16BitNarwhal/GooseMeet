@@ -33,8 +33,7 @@ def get_filler_words():
     return random.choice(fillers)
 
 
-def get_ai_response(user_input, conversation_history):
-
+def get_ai_response(user_input, conversation_history, meeting_name):
     embeddings = OpenAIEmbeddings(openai_api_key=os.environ["OPENAI_API_KEY"])
     vector_store = PineconeVectorStore(
         index=index, embedding=embeddings, text_key="text"
@@ -49,7 +48,7 @@ def get_ai_response(user_input, conversation_history):
     )
 
     qa = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=retriever)
-    conversation_context = "\n".join(conversation_history)
+    conversation_context = f"Meeting Name: {meeting_name}\n\n" + "\n".join(conversation_history)
 
     if "last meeting" in user_input.lower():
         # Query for the most recent meeting
@@ -83,7 +82,7 @@ def save_conversation_context():
     pass
 
 
-def create_conversation_embedding(conversation_id, conversation_text, meeting_number):
+def create_conversation_embedding(conversation_id, conversation_text, meeting_number, meeting_name):
     embeddings = OpenAIEmbeddings(openai_api_key=os.environ["OPENAI_API_KEY"])
     vector_store = PineconeVectorStore(
         index=index, embedding=embeddings, text_key="text"
@@ -98,6 +97,7 @@ def create_conversation_embedding(conversation_id, conversation_text, meeting_nu
             metadatas=[{
                 "conversation_id": conversation_id,
                 "meeting_number": meeting_number,
+                "meeting_name": meeting_name,
                 "meeting_date": meeting_date,
                 "meeting_time": meeting_time
             }],

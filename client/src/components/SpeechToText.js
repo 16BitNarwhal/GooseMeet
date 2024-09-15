@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 
 const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
-const SpeechToText = () => {
+const SpeechToText = ({ meeting_name }) => {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [recognition, setRecognition] = useState(null);
@@ -48,7 +48,10 @@ const SpeechToText = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({
+          text,
+          meeting_name: meeting_name,
+        }),
         credentials: "include",
       });
       if (!response.ok) {

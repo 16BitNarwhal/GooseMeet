@@ -218,7 +218,7 @@ return (
       <footer className="p-4 flex justify-between items-center border-t border-neutral-700 dark:border-neutral-800">
         {/* Speech to Text Button - Moved to the left */}
         <div className="flex-1">
-          <SpeechToText />
+          <SpeechToText meeting_name={meeting_name} />
         </div>
 
         {/* Center controls */}
