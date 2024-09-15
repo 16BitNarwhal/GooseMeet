@@ -75,6 +75,17 @@ const SpeechToText = ({ meeting_name, animCallback }) => {
       recognitionRef.current.stop();
       isListeningRef.current = false;
       console.log('Recognition Stopped!!'); 
+      // repeat twice
+      const audio = new Audio('/honk.mp3');
+      audio.play();
+      setTimeout(() => {
+        const audio = new Audio('/honk.mp3');
+        audio.play();
+      }, 1000);
+      setTimeout(() => {
+        const audio = new Audio('/honk.mp3');
+        audio.play();
+      }, 500);
     }
   };
 
