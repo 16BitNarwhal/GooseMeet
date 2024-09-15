@@ -11,6 +11,7 @@ const SpeechToText = ({ meeting_name, animCallback }) => {
   const recognitionRef = useRef(null);
   const isListeningRef = useRef(false);
   const playingRef = useRef(false);
+  const currentTranscripts = useRef("");
 
   useEffect(() => {
     const SpeechRecognition =
@@ -24,8 +25,10 @@ const SpeechToText = ({ meeting_name, animCallback }) => {
       recognitionRef.current.onresult = (event) => {
         const current = event.resultIndex;
         const transcript = event.results[current][0].transcript;
+        currentTranscripts.current += transcript;
+        console.log(transcript);
+        console.log(currentTranscripts.current);
         setTranscript(transcript);
-        sendTranscriptToBackend(transcript);
       };
     }
 
@@ -47,6 +50,9 @@ const SpeechToText = ({ meeting_name, animCallback }) => {
   const handleKeyUp = (event) => {
     if ((event.code === 'Space' || event.key === 'm') && isListeningRef.current) {
       stopListening();
+      console.log("Transcript:", currentTranscripts.current);
+      sendTranscriptToBackend(currentTranscripts.current);
+      currentTranscripts.current = "";
     }
   };
 
@@ -62,7 +68,7 @@ const SpeechToText = ({ meeting_name, animCallback }) => {
     if (recognitionRef.current) {
       recognitionRef.current.stop();
       isListeningRef.current = false;
-      console.log('Recognition Stopped!!');
+      console.log('Recognition Stopped!!'); 
     }
   };
 
