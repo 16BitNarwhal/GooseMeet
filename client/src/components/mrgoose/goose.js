@@ -7,7 +7,7 @@ export class MrGoose {
     static modelUri = "/mrgoose.glb";
 
     // Default camera position
-    static camera = { position: [30, 45, 60], fov: 50 };
+    static camera = { position: [30, 45, 40], fov: 50 };
 
     // List of available animations
     static Anims = class {
