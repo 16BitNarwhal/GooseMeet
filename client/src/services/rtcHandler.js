@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 class RTCHandler {
-  constructor(meeting_name, username, socket, setPeers, onError) {
+  constructor(meeting_name, username, socket, setPeers, onError, setLocalStream) {
     this.meeting_name = meeting_name;
     this.username = username;
     this.socket = socket;
@@ -13,6 +13,7 @@ class RTCHandler {
     this.mediaEnabled = { video: true, audio: true };
     this.hasMediaDevices = false; // New flag to indicate if media devices are available
     this.onError = onError;
+    this.setLocalStream = setLocalStream; 
   }
 
   async initialize() {
@@ -38,12 +39,14 @@ class RTCHandler {
       this.localStream.getTracks().forEach(track => {
         console.log(`Track kind: ${track.kind}, Track ID: ${track.id}, Track enabled: ${track.enabled}`);
       });
+      this.setLocalStream(this.localStream);
     } catch (err) {
       console.warn('No media devices found or access denied:', err);
       toast.error('No media devices found or access denied. Continuing without video/audio.');
       // Create an empty MediaStream to avoid issues with peer connections
       this.localStream = new MediaStream();
       this.hasMediaDevices = false;
+      this.setLocalStream(this.localStream);
     }
   }
 

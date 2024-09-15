@@ -52,18 +52,18 @@ const MeetingPage = () => {
       navigate('/');
       return;
     }
-
+  
     console.log(`Joining meeting with ID: ${meeting_name}`);
     toast.success(`Joining the meeting...`);
-
+  
     const newSocket = io(apiUrl);
     socketRef.current = newSocket;
-
+  
     newSocket.on('connect', () => {
       console.log('Connected to server');
       newSocket.emit('join', { meeting_name: meeting_name, username: username });
     });
-
+  
     // Fetch chat history manually
     try {
       const response = await fetch(`${apiUrl}/api/chat_history/${meeting_name}`);
@@ -74,15 +74,26 @@ const MeetingPage = () => {
       console.error('Failed to fetch chat history:', error);
       toast.error('Failed to load chat history');
     }
-
+  
     // Initialize the ChatHandler after fetching history
     chatHandler.current = new ChatHandler(meeting_name, username, socketRef.current, setChatHistory);
     chatHandler.current.initialize();
-
-    rtcHandler.current = new RTCHandler(meeting_name, username, socketRef.current, setPeers, errorHandler);
+  
+    rtcHandler.current = new RTCHandler(
+      meeting_name,
+      username,
+      socketRef.current,
+      setPeers,
+      errorHandler,
+      setLocalStream  // Ensure this is passed to trigger re-render when the stream is ready
+    );
+  
     rtcHandler.current.initialize();
-    // Set the local stream in state to trigger a re-render
-    setLocalStream(rtcHandler.current.localStream);
+  
+    // If the local stream was already initialized, set it immediately
+    if (rtcHandler.current.localStream) {
+      setLocalStream(rtcHandler.current.localStream);  // Trigger state update immediately
+    }
   };
 
   useEffect(() => {
@@ -174,7 +185,7 @@ const MeetingPage = () => {
         }`}
       >
         <video ref={videoRef} autoPlay playsInline muted={muted} className="w-full h-full rounded-md object-cover" />
-        <p className="video-username absolute bottom-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded">
+        <p className="video-username absolute bottom-2 left-2 bg-white bg-opacity-50 text-white px-2 py-1 rounded">
           {peerName}
         </p>
       </div>
