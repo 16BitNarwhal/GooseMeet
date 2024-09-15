@@ -234,7 +234,7 @@ const MeetingPage = () => {
         }`}
       >
         <div className="w-full h-full flex justify-center items-center bg-neutral-700 rounded-md">
-          <Canvas>
+          <Canvas camera={MrGoose.camera}>
             <OrbitControls />
             <ambientLight />
             <directionalLight position={[-50, 5, 5]} />

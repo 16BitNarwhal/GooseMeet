@@ -5,6 +5,9 @@ export class MrGoose {
     // Location of model in `public` directory
     static modelUri = "/mrgoose.glb";
 
+    // Default camera position
+    static camera = { position: [30, 45, 60], fov: 50 };
+
     // List of available animations
     static Anims = class {
         static IDLE = "idle";

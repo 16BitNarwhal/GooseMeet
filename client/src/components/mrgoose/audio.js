@@ -1,12 +1,25 @@
 import { MrGoose } from "./goose";
 
-export const PlayGooseAudio = (audioUri, animationCallback, volumeThreshold = 8) => {
-    const audio = new Audio(audioUri);
-    const audioContext = new AudioContext();
-    const analyser = audioContext.createAnalyser();
-    const source = audioContext.createMediaElementSource(audio);
+let currentAudio = null;
+let currentAnalyser = null;
+let currentInterval = null;
 
-    // Connect sources
+export const PlayGooseAudio = (audioUri, animationCallback, volumeThreshold = 8) => {
+    if (currentAudio) {
+        // currentAudio.pause();
+        // currentAudio.currentTime = 0;
+        // clearInterval(currentInterval);
+        return;
+    }
+
+    const audio = new Audio(audioUri);
+    currentAudio = audio;
+
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const analyser = audioContext.createAnalyser();
+    currentAnalyser = analyser;
+
+    const source = audioContext.createMediaElementSource(audio);
     source.connect(analyser);
     analyser.connect(audioContext.destination);
 
@@ -14,12 +27,11 @@ export const PlayGooseAudio = (audioUri, animationCallback, volumeThreshold = 8)
     const bufferLength = analyser.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
 
-    const CheckVolume = () => {
-        // Average frequency intensities to calculate approximate volume
+    const checkVolume = () => {
         analyser.getByteFrequencyData(dataArray);
         const volume = dataArray.reduce((sum, value) => sum + value, 0) / bufferLength;
-
         console.debug(`Current volume: ${volume}`);
+        
         if (volume > volumeThreshold) {
             animationCallback(MrGoose.Anims.SPEAK_START);
         } else {
@@ -29,14 +41,14 @@ export const PlayGooseAudio = (audioUri, animationCallback, volumeThreshold = 8)
 
     audio.onplay = () => {
         audioContext.resume();
-        const intervalId = setInterval(CheckVolume, 100);
-
-        audio.onended = () => {
-            clearInterval(intervalId);
-            animationCallback(MrGoose.Anims.SPEAK_STOP);
-            animationCallback(MrGoose.Anims.IDLE);
-        };
+        currentInterval = setInterval(checkVolume, 100);
     };
 
-    audio.play();
+    audio.onended = () => {
+        clearInterval(currentInterval);
+        animationCallback(MrGoose.Anims.SPEAK_STOP);
+        animationCallback(MrGoose.Anims.IDLE);
+    };
+
+    audio.play().catch(error => console.error("Error playing audio:", error));
 };
