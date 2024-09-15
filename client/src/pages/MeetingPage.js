@@ -207,6 +207,28 @@ const MeetingPage = () => {
       PlayGooseAudio(url, setCurrentAnimation, 8);
     };
   
+    useEffect(() => {
+      const handleKeyDown = (event) => {
+        if (event.code === 'Space' || event.key === 'm') {
+          setSpeaking(true);
+        }
+      };
+
+      const handleKeyUp = (event) => {
+        if (event.code === 'Space' || event.key === 'm') {
+          setSpeaking(false);
+        }
+      };
+
+      window.addEventListener('keydown', handleKeyDown);
+      window.addEventListener('keyup', handleKeyUp);
+
+      return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+        window.removeEventListener('keyup', handleKeyUp);
+      };
+    }, []);
+  
     return (
       <div
         className={`relative rounded-md w-[450px] h-[250px] flex justify-center items-center text-white text-sm ${
@@ -229,7 +251,7 @@ const MeetingPage = () => {
             Mr. Goose
           </p>
         </div>
-        <SpeechToText animCallback={playAudio} />
+        <SpeechToText meeting_name={meeting_name} animCallback={playAudio} />
       </div>
     );
   });

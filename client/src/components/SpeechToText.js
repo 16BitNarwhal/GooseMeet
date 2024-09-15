@@ -8,51 +8,63 @@ const SpeechToText = ({ meeting_name, animCallback }) => {
   const [transcript, setTranscript] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [currentAudio, setCurrentAudio] = useState(null);
-  const activeRef = useRef(false);
+  const recognitionRef = useRef(null);
+  const isListeningRef = useRef(false);
   const playingRef = useRef(false);
 
   useEffect(() => {
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
-      const recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = false;
-      recognition.lang = "en-US";
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = true;
+      recognitionRef.current.interimResults = false;
+      recognitionRef.current.lang = "en-US";
 
-      recognition.onresult = (event) => {
+      recognitionRef.current.onresult = (event) => {
         const current = event.resultIndex;
         const transcript = event.results[current][0].transcript;
         setTranscript(transcript);
-        console.log("PLAYING", playingRef.current);
-        if (playingRef.current) {
-          return;
-        }
-
-        console.log("Audio capturing ended", transcript);
-        if (transcript.toLowerCase().includes("goose")) {
-          console.log("GOOSE");
-          activeRef.current = true;
-        } else if (
-          transcript.toLowerCase().includes("thanks") ||
-          transcript.toLowerCase().includes("thank you")
-        ) {
-          console.log("THANKS");
-          activeRef.current = false;
-        }
-
-        if (activeRef.current) {
-          console.log("SENDING");
-          sendTranscriptToBackend(transcript);
-          playingRef.current = true;
-          console.log("PLAYING", playingRef.current);
-        }
+        sendTranscriptToBackend(transcript);
       };
+    }
 
-      recognition.start();
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
+
+  const handleKeyDown = (event) => {
+    if ((event.code === 'Space' || event.key === 'm') && !isListeningRef.current) {
+      startListening();
+    }
+  };
+
+  const handleKeyUp = (event) => {
+    if ((event.code === 'Space' || event.key === 'm') && isListeningRef.current) {
+      stopListening();
+    }
+  };
+
+  const startListening = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.start();
+      isListeningRef.current = true;
       console.log('Recognition Started!!');
     }
-  }, []);
+  };
+
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      isListeningRef.current = false;
+      console.log('Recognition Stopped!!');
+    }
+  };
 
   const sendTranscriptToBackend = async (text) => {
     setIsLoading(true);
@@ -86,9 +98,10 @@ const SpeechToText = ({ meeting_name, animCallback }) => {
         setCurrentAudio(audio);
         await audio.play();
         animCallback(`${apiUrl}${data.speech_file}`);
-        setTimeout(() => {
+        playingRef.current = true;
+        audio.onended = () => {
           playingRef.current = false;
-        }, audio.duration * 1000);
+        };
       }
     } catch (error) {
       console.error("Error:", error);
