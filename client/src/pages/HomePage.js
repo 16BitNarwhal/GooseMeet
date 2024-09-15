@@ -12,7 +12,7 @@ const HomePage = () => {
   const [username, setUsername] = useState('');
   const [isCreating, setIsCreating] = useState(false); // State to toggle between join/create
   const navigate = useNavigate();
-  const [currentAnimation, setCurrentAnimation] = useState();
+  const [currentAnimation, setCurrentAnimation] = useState(MrGoose.Anims.LOOK_AROUND);
 
   const handleJoinMeet = () => {
     if (!username.trim()) {

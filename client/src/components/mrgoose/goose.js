@@ -12,9 +12,14 @@ export class MrGoose {
     // List of available animations
     static Anims = class {
         static IDLE = "idle";
-        static SPEAK_CYCLE = "talk";
-        static SPEAK_START = "talk open";
-        static SPEAK_STOP = "talk close";
+        static SPEAK_CYCLE = "speak";
+        static SPEAK_START = "speak-start";
+        static SPEAK_STOP = "speak-stop";
+        static HONK = "honk";
+        static LOOK_AROUND = "look";
+        static WINGS_FLAP = "flap";
+        static WINGS_SPREAD = "wings-spread";
+        static WINGS_STORE = "wings-store";
 
         // Custom map function
         static map(callback) {
@@ -27,6 +32,8 @@ export class MrGoose {
         const group = useRef();
         const { nodes, materials, animations } = useGLTF(this.modelUri);
         const { actions } = useAnimations(animations, group);
+
+        console.debug(`Loaded animations:${Object.keys(actions).map((key) => ` "${key}"`)}`);
 
         // Optional spinning logic
         useFrame(() => {
