@@ -6,6 +6,8 @@ import Chat from '../components/Chat';
 import ChatHandler from '../services/chatHandler';
 import Header from '../components/Header';
 import { FaUser } from 'react-icons/fa';
+import { MdChatBubble } from 'react-icons/md';
+import { FaTimes } from 'react-icons/fa';
 
 import { FaMicrophone, FaMicrophoneSlash, FaVideo, FaVideoSlash } from 'react-icons/fa';  // FontAwesome icons
 import { MdCallEnd } from 'react-icons/md';
@@ -29,6 +31,11 @@ const MeetingPage = () => {
   const [peers, setPeers] = useState({});
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false); // New state to manage chat toggle
+
+  const toggleChat = () => {
+    setIsChatOpen(!isChatOpen); // Toggles the chat visibility
+  };
 
   const chatHandler = useRef(null);
   const [chatHistory, setChatHistory] = useState([]);
@@ -253,10 +260,29 @@ return (
     </footer>
     </div>
 
+    
+    {/* Chat Toggle Button (for mobile screens only) */}
+    <button
+      onClick={toggleChat}
+      className="bg-neutral-200 dark:bg-neutral-800 p-4 rounded-md dark:hover:bg-neutral-700 focus:outline-none md:hidden fixed bottom-4 right-4 z-50"
+    >
+      <MdChatBubble className="w-6 h-6 text-black dark:text-white" />
+    </button>
     {/* Chat Column using flex instead of absolute */}
-    <div className="flex-shrink-0 w-1/5 h-full border-l border-neutral-800 p-4 dark:bg-neutral-900 overflow-y-auto">
-      <Chat chatHandler={chatHandler.current} initialChatHistory={chatHistory} peers={peers} />
-    </div>
+{/* Chat Column / Overlay */}
+<div
+  className={`fixed inset-0 z-40 bg-neutral-900 p-4 md:w-1/5 h-full border-l border-neutral-800 dark:bg-neutral-900 overflow-y-auto transition-transform transform md:relative ${
+    isChatOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+  }`}
+>
+  <button
+    className="text-white text-xl mb-4 md:hidden"
+    onClick={toggleChat}
+  >
+    <FaTimes />
+  </button>
+  <Chat chatHandler={chatHandler.current} initialChatHistory={chatHistory} peers={peers} />
+</div>
   </div>
   );
 };
