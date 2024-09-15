@@ -3,7 +3,34 @@ from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_cors import CORS
 from chat import setup_chat
 from webrtc import setup_webrtc
+from goose import setup_goose
 import os
+
+def log_message(level: str, message: str, meeting=''):
+    DEBUG = 'DEBUG'
+    INFO = 'INFO'
+    WARNING = 'WARNING'
+    ERROR = 'ERROR'
+    CRITICAL = 'CRITICAL'
+
+    DEBUG_COLOR = '\033[94m'
+    INFO_COLOR = '\033[92m'
+    WARNING_COLOR = '\033[93m'
+    ERROR_COLOR = '\033[91m'
+    CRITICAL_COLOR = '\033[41m'
+    RESET_COLOR = '\033[0m'
+
+    color_map = {
+        DEBUG: DEBUG_COLOR,
+        INFO: INFO_COLOR,
+        WARNING: WARNING_COLOR,
+        ERROR: ERROR_COLOR,
+        CRITICAL: CRITICAL_COLOR
+    }
+    
+    color = color_map.get(level, RESET_COLOR)
+    meeting = f"[{meeting}] " if meeting else ''
+    print(f"{color}{level} {meeting}- {message}{RESET_COLOR}", flush=True)
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -78,9 +105,25 @@ def handle_disconnect():
 
 setup_chat(app, socketio, meetings)
 setup_webrtc(app, socketio, meetings)
+# setup_goose(app, socketio, meetings)
+
+@socketio.on('send_audio')
+def handle_send_audio(data):
+    meeting_name = data['meeting_name']
+    try:
+        log_message('INFO', 'Sending audio', meeting_name)
+        with open('./sample.mp3', 'rb') as f:
+            log_message('INFO', 'Sending audio', meeting_name)
+            chunk_size = 4096
+            while chunk := f.read(chunk_size):
+                emit('audio_chunk', chunk, room=meeting_name)
+            emit('audio_complete', room=meeting_name)
+    except FileNotFoundError:
+        log_message('ERROR', 'MP3 not found', meeting_name)
+        emit('error', {'message': 'MP3 file not found'})
+    except Exception as e:
+        log_message('ERROR', str(e), meeting_name)
+        emit('error', {'message': str(e)})
 
 if __name__ == '__main__':
-    if os.getenv('TESTING', True):
-        socketio.run(app, debug=True, allow_unsafe_werkzeug=True)
-    else:
-        socketio.run(app, debug=True)
+    socketio.run(app, debug=True, allow_unsafe_werkzeug=True)

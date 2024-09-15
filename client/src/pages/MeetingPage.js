@@ -192,6 +192,68 @@ const MeetingPage = () => {
     );
   });
 
+  // TODO: massive, pls split
+  const GooseElement = React.memo(() => {
+    const audioRef = useRef(null);
+    const [speaking, setSpeaking] = useState(false);
+    const audioBuffer = useRef([]);
+
+    useEffect(() => {
+      socketRef.current.on('connect', () => {
+        setTimeout(() => {
+          socketRef.current.emit('send_audio', { meeting_name, username });
+        }, [])
+      });
+  
+      socketRef.current.on('audio_chunk', (data) => {
+        audioBuffer.current.push(new Uint8Array(data));
+      });
+  
+      socketRef.current.on('audio_complete', () => {
+        console.log("MP3 file transmission complete!");
+        playAudio();
+      });
+    }, []);
+  
+    const playAudio = () => {
+      const blob = new Blob(audioBuffer.current, { type: 'audio/mp3' });
+      const url = URL.createObjectURL(blob);
+      
+      if (audioRef.current) {
+        console.log('Playing audio:', url);
+        audioRef.current.src = url;
+        audioRef.current.play()
+          .then(() => {
+            setSpeaking(true);
+          })
+          .catch((error) => {
+            console.error('Error playing audio:', error);
+          });
+      }
+    };
+  
+    return (
+      <div
+        className={`relative rounded-md w-[450px] h-[250px] flex justify-center items-center text-white text-sm ${
+          speaking ? 'outline outline-4 outline-green-500 rounded-md' : 'outline outline-4 outline-transparent rounded-md'
+        }`}
+      >
+        <audio ref={audioRef} autoPlay playsInline />
+        <div className="w-full h-full flex justify-center items-center bg-neutral-700 rounded-md">
+          <FaUser size={40} className="text-white" />
+        </div>
+
+        {/* Bottom-left overlay for the username */}
+        <div className="absolute bottom-2 left-2 z-10 backdrop-blur-md bg-gray-100 bg-opacity-60 text-md px-4 py-2 text-white rounded">
+          <p className="video-username flex flex-row gap-2 align-center items-center">
+            <FaUser size={10} />
+            Mr. Goose
+          </p>
+        </div>
+      </div>
+    );
+  });
+
 return (
   <div className="relative h-screen flex bg-white dark:bg-neutral-900">
     {/* Main content: Header, Videos, Footer */}
@@ -199,6 +261,7 @@ return (
       <Header eventName={meeting_name} timeLeft={username} />
       <div className="flex-grow">
         <div className="flex flex-wrap gap-4 justify-center p-4 ml-4">
+          <GooseElement />
           {rtcHandler.current.localStream && (
             <VideoElement stream={rtcHandler.current.localStream} muted={true} peerName="You" />
           )}
