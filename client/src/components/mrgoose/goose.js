@@ -1,10 +1,12 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useGLTF, useAnimations } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
+import { LoopOnce } from "three";
 
 export class MrGoose {
     // Location of model in `public` directory
     static modelUri = "/mrgoose.glb";
+    static honkUri = "/honk.mp3";
 
     // Default camera position
     static camera = { position: [30, 45, 40], fov: 50 };
@@ -28,20 +30,34 @@ export class MrGoose {
     };
 
     // Model component
-    static Model = ({ currentAnimation, spin }) => {
+    static Model = ({ currentAnimation, spin, allowHonk, updateAnimationCallback }) => {
         const group = useRef();
         const { nodes, materials, animations } = useGLTF(this.modelUri);
         const { actions } = useAnimations(animations, group);
 
         console.debug(`Loaded animations:${Object.keys(actions).map((key) => ` "${key}"`)}`);
 
-        // Optional spinning logic
+        // If goose clicked
+        const [clicked, setClicked] = useState(false);
+
         useFrame(() => {
+            // Spinning
             if (spin && group.current) {
                 group.current.rotation.y += 0.005; // Spin on Y-axis if 'spin' is true
             }
+
+            // Honking
+            if (allowHonk && clicked) {
+                updateAnimationCallback(MrGoose.Anims.SPEAK_CYCLE);
+                console.log("Honk!");
+                const honk = new Audio(this.honkUri);
+                honk.play();
+                honk.onended = () => updateAnimationCallback(MrGoose.Anims.LOOK_AROUND);
+                setClicked(false);
+            }
         });
 
+        // Handle current animation
         useEffect(() => {
             let activeAnimation = actions[this.Anims.IDLE]; // Default animation
 
@@ -53,14 +69,34 @@ export class MrGoose {
                 return;
             }
 
-            // Play the current animation
+            // Handle current animation
             if (currentAnimation) activeAnimation = actions[currentAnimation]; // Override default if present
+            
+            // Set no-loop for certain animations
+            if (currentAnimation === this.Anims.SPEAK_CYCLE
+                || currentAnimation === this.Anims.SPEAK_START
+                || currentAnimation === this.Anims.SPEAK_STOP
+                || currentAnimation === this.Anims.HONK
+                || currentAnimation === this.Anims.WINGS_SPREAD
+                || currentAnimation === this.Anims.WINGS_STORE
+            ) {
+                activeAnimation.setLoop(LoopOnce);
+            }
+            
+            // Play and fade animation
             activeAnimation.reset().fadeIn(0.5).play();
             return () => activeAnimation.fadeOut(0.5);
         }, [actions, currentAnimation]);
 
         return (
-            <group ref={group} dispose={null}>
+            <group
+                ref={group}
+                dispose={null}
+                onClick={() => {
+                    console.log("honk?");
+                    setClicked(allowHonk);
+                }}
+            >
                 <group name="Scene">
                     <group name="goose" rotation={[Math.PI / 2, 0, 0]}>
                         <group name="mesh">

@@ -69,7 +69,7 @@ const HomePage = () => {
           <OrbitControls />
           <ambientLight />
           <directionalLight position={[-30, 5, 5]} />
-          <MrGoose.Model scale={[2, 2, 2]} currentAnimation={currentAnimation} spin={true}/>
+          <MrGoose.Model scale={[2, 2, 2]} currentAnimation={currentAnimation} spin={true} allowHonk={true} updateAnimationCallback={setCurrentAnimation}/>
         </Canvas>
       </div>
 
