@@ -18,6 +18,7 @@ import { OrbitControls } from "@react-three/drei";
 
 import Button from '../components/Button';
 import toast, { Toaster } from 'react-hot-toast';
+import { PlayGooseAudio } from '../components/mrgoose/audio';
 
 const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
@@ -199,7 +200,6 @@ const MeetingPage = () => {
 
   // TODO: massive, pls split
   const GooseElement = React.memo(() => {
-    const audioRef = useRef(null);
     const [speaking, setSpeaking] = useState(false);
     const audioBuffer = useRef([]);
 
@@ -224,17 +224,7 @@ const MeetingPage = () => {
       const blob = new Blob(audioBuffer.current, { type: 'audio/mp3' });
       const url = URL.createObjectURL(blob);
       
-      if (audioRef.current) {
-        console.log('Playing audio:', url);
-        audioRef.current.src = url;
-        audioRef.current.play()
-          .then(() => {
-            setSpeaking(true);
-          })
-          .catch((error) => {
-            console.error('Error playing audio:', error);
-          });
-      }
+      PlayGooseAudio(url, setCurrentAnimation, 8);
     };
   
     return (
@@ -243,7 +233,6 @@ const MeetingPage = () => {
           speaking ? 'outline outline-4 outline-green-500 rounded-md' : 'outline outline-4 outline-transparent rounded-md'
         }`}
       >
-        <audio ref={audioRef} autoPlay playsInline />
         <div className="w-full h-full flex justify-center items-center bg-neutral-700 rounded-md">
           <Canvas>
             <OrbitControls />
