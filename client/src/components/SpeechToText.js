@@ -99,7 +99,6 @@ const SpeechToText = ({ meeting_name, animCallback }) => {
         },
         body: JSON.stringify({
           text,
-          meeting_name: meeting_name,
         }),
         credentials: "include",
       });

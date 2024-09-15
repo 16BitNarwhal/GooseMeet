@@ -33,7 +33,7 @@ def get_filler_words():
     return random.choice(fillers)
 
 
-def get_ai_response(user_input, conversation_history, meeting_name):
+def get_ai_response(user_input, conversation_history):
     embeddings = OpenAIEmbeddings(openai_api_key=os.environ["OPENAI_API_KEY"])
     vector_store = PineconeVectorStore(
         index=index, embedding=embeddings, text_key="text"
@@ -48,11 +48,9 @@ def get_ai_response(user_input, conversation_history, meeting_name):
     )
 
     qa = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=retriever)
-    conversation_context = f"Meeting Name: {meeting_name}\n\n" + "\n".join(
-        conversation_history
-    )
+    conversation_context = "\n".join(conversation_history)
 
-    goose_context = "You are a helpful talking goose meeting assistant. Respond politely and enthusiastically, but DON'T go on tangents or start by honking. Your goal is to assist with the meeting and provide relevant information, while still being very concise and to the point."
+    goose_context = "You are a helpful talking goose meeting assistant. Respond politely and enthusiastically, but DON'T go on tangents or start by honking. Your goal is to assist with the meeting and provide relevant information, while still being very concise and to the point. Don't keep repeating that you're here to help with the meeting. Be concise!"
 
     if "last meeting" in user_input.lower():
         # Query for the most recent meeting
@@ -86,9 +84,7 @@ def save_conversation_context():
     pass
 
 
-def create_conversation_embedding(
-    conversation_id, conversation_text, meeting_number, meeting_name
-):
+def create_conversation_embedding(conversation_id, conversation_text, meeting_number):
     embeddings = OpenAIEmbeddings(openai_api_key=os.environ["OPENAI_API_KEY"])
     vector_store = PineconeVectorStore(
         index=index, embedding=embeddings, text_key="text"
@@ -104,7 +100,6 @@ def create_conversation_embedding(
                 {
                     "conversation_id": conversation_id,
                     "meeting_number": meeting_number,
-                    "meeting_name": meeting_name,
                     "meeting_date": meeting_date,
                     "meeting_time": meeting_time,
                 }

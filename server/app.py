@@ -179,19 +179,18 @@ def process_text():
     user_input = data.get('text')
     conversation_id = data.get('conversation_id', str(uuid.uuid4()))
     meeting_number = get_next_meeting_number()
-    meeting_name = data.get('meeting_name')  # Get meeting name from the request
 
     full_conversation = []
     full_conversation.append(f"User: {user_input}")
 
-    ai_response = get_ai_response(user_input, full_conversation, meeting_name)
+    ai_response = get_ai_response(user_input, full_conversation)
     full_conversation.append(f"AI: {ai_response}")
 
     speech_file = text_to_speech(ai_response)
 
     full_conversation_text = "\n".join(full_conversation)
     create_conversation_embedding(
-        conversation_id, full_conversation_text, meeting_number, meeting_name
+        conversation_id, full_conversation_text, meeting_number
     )
 
     return jsonify({
