@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { useGLTF, useAnimations } from "@react-three/drei";
+import { useFrame } from "@react-three/fiber";
 
 export class MrGoose {
     // Location of model in `public` directory
@@ -22,10 +23,17 @@ export class MrGoose {
     };
 
     // Model component
-    static Model = ({ currentAnimation }) => {
+    static Model = ({ currentAnimation, spin }) => {
         const group = useRef();
         const { nodes, materials, animations } = useGLTF(this.modelUri);
         const { actions } = useAnimations(animations, group);
+
+        // Optional spinning logic
+        useFrame(() => {
+            if (spin && group.current) {
+                group.current.rotation.y += 0.005; // Spin on Y-axis if 'spin' is true
+            }
+        });
 
         useEffect(() => {
             let activeAnimation = actions[this.Anims.IDLE]; // Default animation
