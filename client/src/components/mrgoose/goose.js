@@ -3,7 +3,7 @@ import { useGLTF, useAnimations } from "@react-three/drei";
 
 export class MrGoose {
     // Location of model in `public` directory
-    static modelUri = "/goosefinal.glb";
+    static modelUri = "/mrgoose.glb";
 
     // List of available animations
     static Anims = class {
